@@ -2,7 +2,7 @@
 // PostgreSQL connection pool setup
 
 const { Pool } = require('pg');
-require('dotenv').config({ path: './backend/config/.env' });
+require('dotenv').config({ path: './.env' });
 
 // Create connection pool
 const pool = new Pool({

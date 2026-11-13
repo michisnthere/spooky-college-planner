@@ -1,9 +1,12 @@
-// Load environment variables
-require('dotenv').config({ path: './backend/config/.env' });
+// Load environment variables from root .env
+require('dotenv').config({ path: './.env' });
 
 const express = require('express');
 const cors = require('cors');
 const { testConnection } = require('./backend/db/connection');
+
+// Import routes
+const collegeRoutes = require('./backend/routes/colleges');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -18,6 +21,28 @@ app.get('/api/health', (req, res) => {
     status: 'Server is running', 
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV 
+  });
+});
+
+// Register routes
+app.use('/api/colleges', collegeRoutes);
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    error: 'Route not found',
+    code: 'NOT_FOUND',
+  });
+});
+
+// Error handler middleware
+app.use((err, req, res, next) => {
+  console.error('Error:', err.message);
+  res.status(500).json({
+    success: false,
+    error: 'Internal server error',
+    code: 'INTERNAL_ERROR',
   });
 });
 
