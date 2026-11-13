@@ -3,10 +3,11 @@ require('dotenv').config({ path: './.env' });
 
 const express = require('express');
 const cors = require('cors');
-const { testConnection } = require('./backend/db/connection');
+const { testConnection } = require('./db/connection');
 
 // Import routes
-const collegeRoutes = require('./backend/routes/colleges');
+const collegeRoutes = require('./routes/colleges');
+const lookupRoutes = require('./routes/lookup');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -26,6 +27,7 @@ app.get('/api/health', (req, res) => {
 
 // Register routes
 app.use('/api/colleges', collegeRoutes);
+app.use('/api/lookup', lookupRoutes);
 
 // 404 handler
 app.use((req, res) => {
