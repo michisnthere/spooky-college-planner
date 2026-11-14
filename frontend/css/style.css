@@ -263,6 +263,7 @@ input {
 
 /* College card: stone button with a delete button under it. */
 .college-tombstone {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -425,8 +426,10 @@ input {
    -------------------------------------------------------------------------- */
 #add-college-dialog,
 #college-detail-dialog,
+#missing-info-dialog,
 .add-college-dialog,
-.college-detail-dialog {
+.college-detail-dialog,
+.missing-info-dialog {
   width: min(92vw, 34rem);
   max-width: 92vw;
   max-height: 90vh;
@@ -539,6 +542,27 @@ dialog::backdrop {
   font-weight: bold;
   color: var(--color-link);
   text-shadow: none;
+}
+
+.search-input-wrap {
+  position: relative;
+}
+
+.search-input-wrap input {
+  padding-right: 2.4rem;
+}
+
+/* Loading spinner for the college lookup. The hidden attribute hides it, so no display rule here. */
+.search-spinner {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  width: 1rem;
+  height: 1rem;
+  margin-top: -0.5rem;
+  border: 2px solid var(--color-parchment-edge);
+  border-top-color: var(--color-accent-strong);
+  border-radius: 50%;
 }
 
 .form-actions {
@@ -671,7 +695,9 @@ dialog::backdrop {
 .deadline-track,
 #deadline-track {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 1.25rem;
   min-height: 8rem;
   padding: 1rem;
   overflow-x: auto;
@@ -723,8 +749,10 @@ dialog::backdrop {
 
   #add-college-dialog,
   #college-detail-dialog,
+  #missing-info-dialog,
   .add-college-dialog,
-  .college-detail-dialog {
+  .college-detail-dialog,
+  .missing-info-dialog {
     width: 94vw;
     padding: 1.1rem;
   }
@@ -767,4 +795,349 @@ dialog::backdrop {
   background: var(--color-parchment-deep);
   box-shadow: inset 0 0 0 2px var(--color-ink);
   font-weight: 800;
+}
+
+/* --------------------------------------------------------------------------
+   10. Deadline lanes (Task 15): Plants vs. Zombies lawn, one lane per college
+   Zombie left, sunflower or tombstone at the right end, days label between.
+   Text on the dark sky uses the white outline (--text-outline).
+   -------------------------------------------------------------------------- */
+.deadline-empty {
+  margin: 0;
+  padding: 1rem;
+  text-align: center;
+  font-weight: bold;
+  color: var(--color-header-text);
+  text-shadow: var(--text-outline);
+}
+
+.deadline-lane {
+  min-width: 36rem;
+}
+
+.deadline-lane__header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.35rem;
+}
+
+.deadline-lane__complete:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.deadline-lane__strip {
+  position: relative;
+  display: flex;
+  height: 8.5rem;
+  overflow: hidden;
+  border: 3px solid #1f3d14;
+  border-radius: 0.5rem;
+  background:
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.07) 0 40px, transparent 40px 80px),
+    linear-gradient(to bottom, var(--color-grass-light) 0%, var(--color-grass-top) 35%, var(--color-grass-mid) 100%);
+  box-shadow: inset 0 -8px 0 rgba(0, 0, 0, 0.18), 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* Walking path. The right margin reserves room for the sunflower or tombstone. */
+.deadline-lane__path {
+  position: relative;
+  flex: 1 1 auto;
+  margin: 0 9.5rem 0 0.5rem;
+}
+
+/* The rail is as wide as the path. JS sets transform: translateX(N%) on it, which moves the
+   walker N% of the path. Only transform changes, so the move stays on the compositor. */
+.deadline-lane__rail {
+  position: absolute;
+  left: 0;
+  bottom: 0.4rem;
+  width: 100%;
+  height: 6.5rem;
+  pointer-events: none;
+  transform: translateX(0);
+  transition: transform 0.8s ease-in-out;
+  will-change: transform;
+}
+.deadline-lane__rail .lane-marker {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  pointer-events: auto;
+}
+
+/* Days label, centered between the walker and the lane end. JS sets its left. */
+.deadline-lane__days {
+  position: absolute;
+  top: 0.35rem;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: var(--text-outline);
+  transition: left 0.8s ease-in-out;
+}
+
+.deadline-lane__end {
+  position: absolute;
+  top: 50%;
+  right: 0.5rem;
+  transform: translateY(-50%);
+  width: 7.5rem;
+  display: flex;
+  justify-content: center;
+}
+
+.deadline-lane__message {
+  margin: 0.3rem 0 0;
+  min-height: 1.3em;
+  text-align: right;
+  font-weight: bold;
+  color: #ffffff;
+  text-shadow: var(--text-outline);
+}
+
+/* Zombie: body parts are absolute inside a 4rem x 6.2rem box. */
+.zombie {
+  position: absolute;
+  width: 4rem;
+  height: 6.2rem;
+}
+
+.zombie__head,
+.zombie__torso,
+.zombie__arm,
+.zombie__leg,
+.zombie__hair,
+.zombie__eye,
+.zombie__mouth {
+  position: absolute;
+  display: block;
+  box-sizing: border-box;
+}
+
+.zombie__head {
+  left: 1rem;
+  top: 0;
+  width: 2rem;
+  height: 2rem;
+  border: 2px solid #1d2a17;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, #c8e6a4, #86b06c 55%, #4d6b3d);
+}
+
+.zombie__hair {
+  left: 0.1rem;
+  top: -0.35rem;
+  width: 1.6rem;
+  height: 0.8rem;
+  border-radius: 50% 50% 0 0;
+  background: #2e2a22;
+}
+
+.zombie__eye {
+  top: 0.5rem;
+  width: 0.5rem;
+  height: 0.5rem;
+  border: 1px solid #1d2a17;
+  border-radius: 50%;
+  background: #fff3b0;
+}
+
+.zombie__eye--left {
+  left: 0.25rem;
+}
+
+.zombie__eye--right {
+  left: 0.95rem;
+}
+
+.zombie__eye::after {
+  content: "";
+  position: absolute;
+  left: 0.12rem;
+  top: 0.12rem;
+  width: 0.2rem;
+  height: 0.2rem;
+  border-radius: 50%;
+  background: #b1122b;
+}
+
+.zombie__mouth {
+  left: 0.45rem;
+  top: 1.2rem;
+  width: 0.9rem;
+  height: 0.35rem;
+  border-radius: 0 0 0.5rem 0.5rem;
+  background: #3a0a0a;
+}
+
+.zombie__torso {
+  left: 0.7rem;
+  top: 2rem;
+  width: 2.6rem;
+  height: 2.2rem;
+  border: 2px solid #17242f;
+  border-radius: 0.4rem 0.4rem 0.2rem 0.2rem;
+  background: linear-gradient(#56789a, #2e4a63);
+}
+
+/* Torn shirt shows exposed skin. */
+.zombie__torso::after {
+  content: "";
+  position: absolute;
+  left: 1.4rem;
+  top: 0.4rem;
+  width: 0.5rem;
+  height: 0.9rem;
+  border-radius: 0 0 0.3rem 0.3rem;
+  background: #7fa86a;
+}
+
+.zombie__arm {
+  width: 0.8rem;
+  height: 1.9rem;
+  border: 2px solid #1d2a17;
+  border-radius: 0.35rem;
+  background: #86b06c;
+}
+
+.zombie__arm--back {
+  left: 0.2rem;
+  top: 2.4rem;
+  transform: rotate(12deg);
+  transform-origin: top center;
+}
+
+.zombie__arm--front {
+  left: 2.6rem;
+  top: 2.4rem;
+  width: 1.5rem;
+  height: 0.7rem;
+  border-radius: 0 0.4rem 0.4rem 0;
+}
+
+.zombie__leg {
+  top: 4.2rem;
+  width: 0.95rem;
+  height: 2rem;
+  border: 2px solid #1a2218;
+  border-radius: 0 0 0.3rem 0.3rem;
+  background: #3d4a3c;
+}
+
+.zombie__leg--back {
+  left: 0.9rem;
+}
+
+.zombie__leg--front {
+  left: 2rem;
+}
+
+.zombie__leg::after {
+  content: "";
+  position: absolute;
+  left: -0.2rem;
+  bottom: -0.2rem;
+  width: 1.3rem;
+  height: 0.5rem;
+  border-radius: 0.25rem;
+  background: #1b1b1b;
+}
+
+/* Sunflower end marker. The disc holds the college name. Petals come from a conic gradient. */
+.lane-sunflower {
+  position: relative;
+  width: 7.5rem;
+  height: 7.5rem;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle closest-side, #6b3f00 0 70%, transparent 72%),
+    repeating-conic-gradient(#ffd21f 0deg 18deg, #ffb000 18deg 36deg, transparent 36deg 45deg);
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5));
+}
+
+.lane-sunflower__name {
+  width: 5rem;
+  max-height: 3.2rem;
+  overflow: hidden;
+  text-align: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1.1;
+  color: #ffffff;
+  text-shadow: var(--text-outline);
+  overflow-wrap: anywhere;
+}
+
+/* Tombstones that replace the sunflower and that mark completion. */
+.deadline-lane__end .lane-marker--end {
+  width: 7.5rem;
+  min-height: 6rem;
+  padding: 1.6rem 0.4rem 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.deadline-lane__path .lane-marker--completed {
+  width: 5.5rem;
+  min-height: 6.5rem;
+  padding: 2rem 0.4rem 0.6rem;
+  font-size: 0.7rem;
+}
+
+@media (max-width: 768px) {
+  .deadline-lane {
+    min-width: 30rem;
+  }
+
+  .deadline-lane__strip {
+    height: 7.5rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   11. Submitted state (Task 21): checkmark on the stone and the zombie that
+   falls on the card when the application is submitted.
+   -------------------------------------------------------------------------- */
+.tombstone--submitted {
+  border-color: #7fbf5a;
+}
+
+.tombstone__check {
+  position: absolute;
+  top: 0.45rem;
+  right: 0.55rem;
+  z-index: 2;
+  font-size: 1.25rem;
+  font-weight: 900;
+  line-height: 1;
+  color: #b8f08a;
+  text-shadow: var(--text-outline);
+  pointer-events: none;
+}
+
+/* Zombie on a graveyard card. Sits above the stone and its delete button. */
+.tombstone-zombie {
+  left: calc(50% - 2rem);
+  bottom: 2.75rem;
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* Missing-info dialog: lists what the lookup could not find, with one input per item. */
+.missing-info-summary {
+  margin: 0 0 0.5rem;
+  line-height: 1.45;
+}
+#missing-info-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+.form-field input[aria-invalid="true"] {
+  border-color: #8a1c1c;
+  box-shadow: 0 0 0 2px rgba(138, 28, 28, 0.25);
 }

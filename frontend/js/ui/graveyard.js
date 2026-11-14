@@ -1,6 +1,7 @@
 // frontend/js/ui/graveyard.js
 // Graveyard container: renders, adds, and removes college tombstone cards.
-import { createTombstoneCard } from './tombstone.js';
+import { createTombstoneCard, setTombstoneSubmitted, getTombstoneName } from './tombstone.js';
+import { buildZombie, playZombieDefeat, prefersReducedMotion } from './deadline-tracker.js';
 
 let container = null;
 let handlers = {};
@@ -34,16 +35,23 @@ function findCard(collegeId) {
 }
 
 // Asks for confirmation, runs the optional onDelete callback, then removes the card.
+// A second click on Delete while the first request is still running does nothing.
+const deleting = new Set();
 async function confirmAndDelete(college) {
+  const key = String(college.id);
+  if (deleting.has(key)) return false;
   const name = college.name || 'this college';
   if (!globalThis.confirm(`Delete ${name} from your graveyard? This cannot be undone.`)) {
     return false;
   }
+  deleting.add(key);
   try {
     if (handlers.onDelete) await handlers.onDelete(college);
   } catch (error) {
     if (handlers.onError) handlers.onError(error);
     return false;
+  } finally {
+    deleting.delete(key);
   }
   removeTombstone(college.id);
   return true;
@@ -83,6 +91,44 @@ export function addTombstone(college) {
   card.querySelector('.college-tombstone__stone').classList.add('tombstone--reveal');
   container.appendChild(card);
   return card;
+}
+
+/**
+ * Marks a college as submitted on the graveyard. A zombie falls on the card with the defeat
+ * animation, then the stone shows a checkmark. With reduced motion, the defeat is skipped and the
+ * checkmark appears at once.
+ * @param {object} college Needs `id` and `name`.
+ * @param {object} [options]
+ * @param {boolean} [options.animate=true] Set to false to skip the defeat.
+ * @returns {Promise<boolean>} False when no card exists for the college.
+ */
+export async function markTombstoneSubmitted(college, { animate = true } = {}) {
+  requireContainer();
+  const card = findCard(college.id);
+  if (!card) return false;
+
+  if (animate && !prefersReducedMotion()) {
+    const zombie = buildZombie(getTombstoneName(college));
+    zombie.classList.add('tombstone-zombie');
+    card.append(zombie);
+    await playZombieDefeat(zombie);
+    zombie.remove();
+  }
+  setTombstoneSubmitted(card, true);
+  return true;
+}
+
+/**
+ * Removes the checkmark from a college's card. No animation plays.
+ * @param {string|number} collegeId
+ * @returns {boolean} False when no card exists for the college.
+ */
+export function clearTombstoneSubmitted(collegeId) {
+  requireContainer();
+  const card = findCard(collegeId);
+  if (!card) return false;
+  setTombstoneSubmitted(card, false);
+  return true;
 }
 
 /**

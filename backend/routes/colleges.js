@@ -60,10 +60,11 @@ router.post('/', async (req, res) => {
       message: 'College added successfully',
     });
   } catch (error) {
-    res.status(400).json({
+    const duplicate = error.code === 'DUPLICATE_COLLEGE';
+    res.status(duplicate ? 409 : 400).json({
       success: false,
       error: error.message,
-      code: 'ADD_ERROR',
+      code: duplicate ? 'DUPLICATE_COLLEGE' : 'ADD_ERROR',
     });
   }
 });

@@ -2,10 +2,10 @@
 // Simple test script to verify database connectivity
 
 require('dotenv').config({ path: './backend/config/.env' });
-const { testConnection } = require('./connection');
+const { testConnection, describeTarget } = require('./connection');
 
 console.log('Testing database connection...');
-console.log(`DATABASE_URL: ${process.env.DATABASE_URL}`);
+console.log(`Database: ${describeTarget()}`);
 console.log('');
 
 testConnection().then(success => {

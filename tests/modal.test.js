@@ -198,3 +198,53 @@ test('after the dialog closes, status clicks are ignored and state resets on reo
   assert.deepEqual(pressed(), ['waitlisted']);
   closeDetailModal();
 });
+
+test('without an onStatusChange callback, a status click moves the highlight (UI-only default)', async () => {
+  const { initDetailModal, openDetailModal, closeDetailModal } = await modal();
+  initDetailModal(); // Same call app.js makes today.
+  openDetailModal(HARVARD, { status: 'pending' });
+  statusButtons().find((b) => b.dataset.status === 'waitlisted').click();
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.deepEqual(pressed(), ['waitlisted']);
+  closeDetailModal();
+});
+
+test('a Date deadline (as returned by the pg driver) shows the correct date and days', async () => {
+  const { openDetailModal, closeDetailModal, formatDaysRemaining } = await modal();
+  const pgDate = new Date(2026, 2, 25); // local midnight, the way pg returns DATE columns
+  openDetailModal(HARVARD, { deadline: pgDate });
+  assert.equal(text('detail-deadline'), '2026-03-25');
+  assert.equal(document.getElementById('detail-deadline-input').value, '2026-03-25');
+  assert.equal(formatDaysRemaining(new Date(Number.NaN)), 'No deadline set', 'invalid Date is missing');
+  closeDetailModal();
+});
+
+test('Escape path: cancel then close resets state, and later status clicks do nothing', async () => {
+  const { initDetailModal, openDetailModal } = await modal();
+  const calls = [];
+  initDetailModal({ onStatusChange: (college, status) => calls.push(status) });
+  openDetailModal(HARVARD, { status: 'pending' });
+  // A browser fires "cancel" and then "close" when Escape closes a native dialog.
+  // jsdom does not send Escape, so the shim sequence is dispatched by hand.
+  dialog().dispatchEvent(new dom.window.Event('cancel', { cancelable: true }));
+  dialog().close();
+  assert.equal(dialog().open, false, 'dialog closed');
+  statusButtons().find((b) => b.dataset.status === 'accepted').click();
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.deepEqual(calls, [], 'no save after Escape');
+  assert.equal(text('detail-status-message'), '', 'message cleared');
+});
+
+test('clicking a tombstone in the real app wiring opens the modal with that college', async () => {
+  const app = await import(pathToFileURL(path.join(FRONTEND, 'js', 'app.js')).href);
+  app.initApp({ colleges: [HARVARD, { id: 'y9', name: 'Yale University', state: 'CT', deadline_date: '2026-04-01' }] });
+  const yaleStone = document.querySelector('[data-college-id="y9"] .college-tombstone__stone');
+  yaleStone.click();
+  assert.equal(dialog().open, true, 'dialog opened from tombstone click');
+  assert.equal(text('detail-college-name'), 'Yale University');
+  assert.equal(text('detail-state'), 'Connecticut', 'an old two-letter value shows as the full name');
+  assert.equal(text('detail-acceptance-rate'), 'Not available');
+  assert.equal(text('detail-deadline'), '2026-04-01');
+  document.getElementById('detail-close-button').click();
+  assert.equal(dialog().open, false, 'closes via the close button');
+});

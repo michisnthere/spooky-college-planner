@@ -16,6 +16,7 @@ const collegeRoutes = require('./routes/colleges');
 const lookupRoutes = require('./routes/lookup');
 const applicationRoutes = require('./routes/applications');
 const deadlineRoutes = require('./routes/deadlines');
+const studentRoutes = require('./routes/students');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -42,6 +43,7 @@ app.use('/api/colleges', collegeRoutes);
 app.use('/api/lookup', lookupRoutes);
 app.use('/api/applications', applicationRoutes);
 app.use('/api/deadlines', deadlineRoutes);
+app.use('/api/students', studentRoutes);
 
 // 404 handler
 app.use((req, res) => {

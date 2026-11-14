@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS colleges (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   student_id VARCHAR(255),
   name VARCHAR(255) NOT NULL,
-  state VARCHAR(2),
+  state VARCHAR(50), -- full name, such as 'Massachusetts'
   location VARCHAR(255),
   acceptance_rate DECIMAL(5, 2),
   scorecard_id VARCHAR(50),

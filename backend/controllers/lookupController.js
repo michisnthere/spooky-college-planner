@@ -2,9 +2,28 @@
 // College Scorecard API lookup controller
 
 const axios = require('axios');
+const { normalizeState } = require('../utils/states');
 
 const SCORECARD_API_URL = 'https://api.data.gov/ed/collegescorecard/v1/schools';
 const API_KEY = process.env.COLLEGE_SCORECARD_API_KEY;
+
+// Turns one Scorecard result into the shape the frontend uses. Missing values become null, never
+// "NaN" or "undefined", so the frontend can tell which attributes it still needs from the user.
+// The state is stored as a full name ("Massachusetts"); an unrecognised code is kept as sent.
+const formatCollege = (college) => {
+  const admissionRate = college['latest.admissions.admission_rate'];
+  const rate = admissionRate != null ? Number(admissionRate) : NaN;
+  const rawState = college['school.state'];
+  const city = college['school.city'];
+  return {
+    id: college.id,
+    name: college['school.name'],
+    state: rawState != null && String(rawState).trim() !== '' ? (normalizeState(rawState) ?? String(rawState).trim()) : null,
+    city: city != null && String(city).trim() !== '' ? city : null,
+    acceptanceRate: Number.isFinite(rate) ? (rate * 100).toFixed(2) : null,
+    scorecardId: college.id,
+  };
+};
 
 // Search colleges by name using College Scorecard API
 const searchCollege = async (collegeName) => {
@@ -17,9 +36,6 @@ const searchCollege = async (collegeName) => {
   }
 
   try {
-    console.log(`[Lookup] Searching for: ${collegeName}`);
-    console.log(`[Lookup] Using API URL: ${SCORECARD_API_URL}`);
-
     // Query the Scorecard API - note: school.name parameter for filtering
     const response = await axios.get(SCORECARD_API_URL, {
       params: {
@@ -31,28 +47,13 @@ const searchCollege = async (collegeName) => {
       timeout: 5000,
     });
 
-    console.log(`[Lookup] API Response status: ${response.status}`);
-    console.log(`[Lookup] Response has results property: ${!!response.data.results}`);
-
     if (!response.data.results || response.data.results.length === 0) {
-      console.log(`[Lookup] No results found for: ${collegeName}`);
       return [];
     }
 
     // Parse and format results
-    const colleges = response.data.results.map(college => {
-      const admissionRate = college['latest.admissions.admission_rate'];
-      return {
-        id: college.id,
-        name: college['school.name'],
-        state: college['school.state'],
-        city: college['school.city'],
-        acceptanceRate: admissionRate !== null ? (admissionRate * 100).toFixed(2) : null,
-        scorecardId: college.id,
-      };
-    });
+    const colleges = response.data.results.map(formatCollege);
 
-    console.log(`[Lookup] Found ${colleges.length} results`);
     return colleges;
   } catch (error) {
     console.error(`[Lookup] Error: ${error.message}`);
@@ -73,4 +74,5 @@ const searchCollege = async (collegeName) => {
 
 module.exports = {
   searchCollege,
+  formatCollege,
 };

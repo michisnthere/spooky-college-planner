@@ -17,12 +17,21 @@ pool.on('error', (err, client) => {
   console.error('Unexpected error on idle client', err);
 });
 
+// Host and database name only. Never print the full URL, it holds the password.
+const describeTarget = () => {
+  try {
+    const url = new URL(process.env.DATABASE_URL);
+    return `${url.hostname}/${url.pathname.replace(/^\//, '')}`;
+  } catch {
+    return '(DATABASE_URL not set or invalid)';
+  }
+};
 // Test query function
 const testConnection = async () => {
   try {
     const result = await pool.query('SELECT NOW()');
     console.log('? Database connection successful');
-    console.log(`  Connected to: ${process.env.DATABASE_URL}`);
+    console.log(`  Connected to: ${describeTarget()}`);
     console.log(`  Current time: ${result.rows[0].now}`);
     return true;
   } catch (error) {
@@ -33,6 +42,7 @@ const testConnection = async () => {
 };
 
 module.exports = {
+  describeTarget,
   pool,
   query: (text, params) => pool.query(text, params),
   testConnection,

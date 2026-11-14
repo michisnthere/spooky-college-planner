@@ -2,19 +2,17 @@
 // Deadline tracking and zombie progress controller
 
 const { query } = require('../db/connection');
+const { parseLocalDate, startOfDay, toLocalDay } = require('../utils/dates');
 
 // Calculate days remaining from deadline date to today
 const calculateDaysRemaining = (deadlineDate) => {
   if (!deadlineDate) return null;
   
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  
-  const deadline = new Date(deadlineDate);
-  deadline.setHours(0, 0, 0, 0);
-  
-  const timeDiff = deadline - today;
-  const daysRemaining = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+  const today = startOfDay();
+  const deadline = toLocalDay(deadlineDate);
+  if (!deadline) return null;
+  // Round, not ceil: a day across a daylight-saving change is 23 or 25 hours long.
+  const daysRemaining = Math.round((deadline - today) / (1000 * 60 * 60 * 24));
   
   return daysRemaining;
 };
@@ -74,17 +72,12 @@ const updateDeadline = async (collegeId, newDeadlineDate) => {
   }
 
   // Validate date format and that it's in the future
-  const deadline = new Date(newDeadlineDate);
-  if (isNaN(deadline.getTime())) {
+  const deadline = parseLocalDate(newDeadlineDate);
+  if (!deadline) {
     throw new Error('Invalid date format. Use YYYY-MM-DD');
   }
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  deadline.setHours(0, 0, 0, 0);
-
-  if (deadline < today) {
-    throw new Error('Deadline date must be in the future');
+  if (deadline < startOfDay()) {
+    throw new Error('Deadline date must be today or later');
   }
 
   try {

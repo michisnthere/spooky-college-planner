@@ -183,7 +183,7 @@ Each task lists its steps and verification checks as plain bullets. Only the top
     - The graveyard scrolls horizontally.
     - The layout is responsive on a mobile view.
 
-- [-] 12. CSS Animations (Zombie, Cards, Transitions)
+- [x] 12. CSS Animations (Zombie, Cards, Transitions)
   - Description: Create CSS keyframe animations for the zombie walk, tombstone reveal, zombie defeat with a dirt burst, and modal fade-in, disabled under reduced motion.
   - Steps:
     1. Create frontend/css/animations.css.
@@ -195,7 +195,7 @@ Each task lists its steps and verification checks as plain bullets. Only the top
 
 ### Frontend Components Phase
 
-- [ ] 13. Graveyard Container & Tombstone Cards
+- [x] 13. Graveyard Container & Tombstone Cards
   - Description: Implement JavaScript to render tombstone cards.
   - Steps:
     1. Create frontend/js/ui/tombstone.js with createTombstoneCard(collegeData).
@@ -204,7 +204,7 @@ Each task lists its steps and verification checks as plain bullets. Only the top
   - Verification:
     - Tombstone cards render, scroll horizontally, open the detail modal on click, and delete on the delete button.
 
-- [ ] 14. Detail View Modal Component
+- [x] 14. Detail View Modal Component
   - Description: Create modal popup for college details.
   - Steps:
     1. Create frontend/js/ui/modal.js with openDetailModal() and closeDetailModal().
@@ -214,7 +214,7 @@ Each task lists its steps and verification checks as plain bullets. Only the top
   - Verification:
     - The modal opens on tombstone click, shows the correct details, and closes by all three methods.
 
-- [ ] 15. Deadline Tracker Component
+- [x] 15. Deadline Tracker Component
   - Description: Create a Plants vs. Zombies-style lane tracker on the separate deadlines.html page, with one lane per college, a detailed zombie, a sunflower end marker, a days-remaining label, and a Mark as completed button per lane.
   - Steps:
     1. Create frontend/js/ui/deadline-tracker.js.
@@ -225,7 +225,7 @@ Each task lists its steps and verification checks as plain bullets. Only the top
   - Verification:
     - Each college has its own lane. The zombie position matches days remaining. Mark as completed plays the death animation and leaves a dated tombstone. A deadline at 0 days shows "deadline has passed."
 
-- [ ] 16. Auto-Fill College Form
+- [x] 16. Auto-Fill College Form
   - Description: Create the add-college form, shown inside the add-college dialog, with college search and auto-fill.
   - Steps:
     1. Create frontend/js/ui/form.js.
@@ -238,7 +238,7 @@ Each task lists its steps and verification checks as plain bullets. Only the top
 
 ### Frontend API Integration Phase
 
-- [ ] 17. API Client Setup (Fetch Wrapper)
+- [x] 17. API Client Setup (Fetch Wrapper)
   - Description: Create fetch wrapper for API communication.
   - Steps:
     1. Create frontend/js/api/client.js.
@@ -249,7 +249,7 @@ Each task lists its steps and verification checks as plain bullets. Only the top
   - Verification:
     - apiClient.get('/api/colleges?studentId=test') resolves with data. Errors are handled.
 
-- [ ] 18. College Lookup & Form Auto-Fill Logic
+- [x] 18. College Lookup & Form Auto-Fill Logic
   - Description: Implement search-as-you-type college lookup.
   - Steps:
     1. Add a 300ms debounce to the college name input.
@@ -260,7 +260,7 @@ Each task lists its steps and verification checks as plain bullets. Only the top
   - Verification:
     - "Harvard" shows suggestions after 300ms. An invalid name shows "College not found."
 
-- [ ] 19. Add College to Graveyard Logic
+- [x] 19. Add College to Graveyard Logic
   - Description: Connect form submission to graveyard.
   - Steps:
     1. On form submit, collect the data.
@@ -271,7 +271,7 @@ Each task lists its steps and verification checks as plain bullets. Only the top
   - Verification:
     - A submitted college appears as a tombstone with the card reveal animation, and the tombstone persists after page refresh.
 
-- [ ] 20. Update Deadline & Zombie Animation
+- [x] 20. Update Deadline & Zombie Animation
   - Description: Connect deadline updates to zombie animation.
   - Steps:
     1. Create frontend/js/app.js (main controller).
@@ -282,7 +282,7 @@ Each task lists its steps and verification checks as plain bullets. Only the top
   - Verification:
     - A deadline change moves the zombie to the new position, and the position persists after refresh.
 
-- [ ] 21. Mark Application as Submitted
+- [x] 21. Mark Application as Submitted
   - Description: Implement submission with completion animation.
   - Steps:
     1. Click the Submitted button in the modal.
@@ -295,7 +295,7 @@ Each task lists its steps and verification checks as plain bullets. Only the top
 
 ## Testing & Polish
 
-- [ ] 22. End-to-End Flow Testing
+- [x] 22. End-to-End Flow Testing
   - Description: Test complete workflow from start to finish.
   - Steps:
     1. Add 3 colleges with different deadlines.
@@ -306,7 +306,7 @@ Each task lists its steps and verification checks as plain bullets. Only the top
   - Verification:
     - All 3 colleges display correctly, zombie positions match deadlines, the submitted college shows the defeat animation, and no network or console errors appear.
 
-- [ ] 23. Error Handling & Edge Cases
+- [x] 23. Error Handling & Edge Cases
   - Description: Test error scenarios and recovery.
   - Steps:
     1. Test a non-existent college and missing required fields.
@@ -317,7 +317,7 @@ Each task lists its steps and verification checks as plain bullets. Only the top
   - Verification:
     - Each error shows an appropriate message, no unhandled exceptions occur, retry works, and form data is preserved.
 
-- [ ] 24. Performance & Cleanup
+- [x] 24. Performance & Cleanup
   - Description: Optimize performance and clean up code.
   - Steps:
     1. Use CSS transforms for animations.

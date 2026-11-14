@@ -14,6 +14,39 @@ export function getTombstoneName(college) {
   return name || 'Unnamed college';
 }
 
+/** Modifier class added to a stone whose application is submitted (Task 21). */
+export const SUBMITTED_CLASS = 'tombstone--submitted';
+const CHECK_CLASS = 'tombstone__check';
+
+/**
+ * Shows or hides the submitted state on a card: a checkmark on the stone and the modifier class.
+ * Safe to call more than once.
+ * @param {HTMLElement} card The card from createTombstoneCard.
+ * @param {boolean} submitted
+ * @returns {boolean} False when the card has no stone.
+ */
+export function setTombstoneSubmitted(card, submitted) {
+  const stone = card.querySelector('.college-tombstone__stone');
+  if (!stone) return false;
+  let check = stone.querySelector(`.${CHECK_CLASS}`);
+
+  if (submitted) {
+    stone.classList.add(SUBMITTED_CLASS);
+    if (!check) {
+      check = document.createElement('span');
+      check.className = CHECK_CLASS;
+      check.textContent = '✓';
+      check.setAttribute('role', 'img');
+      check.setAttribute('aria-label', 'Submitted');
+      stone.append(check);
+    }
+  } else {
+    stone.classList.remove(SUBMITTED_CLASS);
+    if (check) check.remove();
+  }
+  return true;
+}
+
 /**
  * Creates a tombstone card for one college. The card has a stone button that
  * selects the college, and a sibling delete button. The delete button is not
@@ -52,5 +85,6 @@ export function createTombstoneCard(college, handlers = {}) {
   });
 
   card.append(stone, deleteButton);
+  if (college.status === 'submitted') setTombstoneSubmitted(card, true);
   return card;
 }

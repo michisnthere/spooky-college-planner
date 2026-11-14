@@ -154,6 +154,17 @@
   animation: modalFadeIn 0.25s ease-out backwards;
 }
 
+/* Spinner shown while the college lookup is running. */
+@keyframes spinnerSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.search-spinner {
+  animation: spinnerSpin 0.8s linear infinite;
+}
+
 /* --------------------------------------------------------------------------
    5. Reduced motion
    When the operating system asks for reduced motion, every animation and
@@ -169,13 +180,16 @@
   .dirt-burst::before,
   .dirt-burst::after,
   .dialog--fade-in,
+  .search-spinner,
   .tombstone,
   .btn,
   dialog,
   #add-college-dialog,
   #college-detail-dialog,
   .add-college-dialog,
-  .college-detail-dialog {
+  .college-detail-dialog,
+  .deadline-lane__rail,
+  .deadline-lane__days {
     animation: none;
     transition: none;
   }

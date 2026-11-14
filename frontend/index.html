@@ -37,8 +37,12 @@
     <form class="add-college-form" id="add-college-form">
       <div class="form-field">
         <label for="college-search">College name</label>
-        <input type="search" id="college-search" name="collegeName" autocomplete="off" aria-controls="college-suggestions" required>
+        <div class="search-input-wrap">
+          <input type="search" id="college-search" name="collegeName" autocomplete="off" aria-controls="college-suggestions" aria-expanded="false" required>
+          <span class="search-spinner" id="college-search-spinner" role="img" aria-label="Searching colleges" hidden></span>
+        </div>
         <ul class="college-suggestions" id="college-suggestions" hidden></ul>
+        <p class="form-message" id="college-lookup-message" role="status" aria-live="polite"></p>
       </div>
 
       <div class="form-field">
@@ -70,6 +74,18 @@
     </form>
   </dialog>
 
+  <dialog class="missing-info-dialog" id="missing-info-dialog" aria-labelledby="missing-info-title" aria-describedby="missing-info-summary">
+    <h2 class="dialog-title" id="missing-info-title">Some details are missing</h2>
+    <form class="add-college-form" id="missing-info-form" novalidate>
+      <p class="missing-info-summary" id="missing-info-summary"></p>
+      <div id="missing-info-fields"></div>
+      <p class="form-message" id="missing-info-message" role="alert" aria-live="assertive"></p>
+      <div class="form-actions">
+        <button type="button" class="btn btn--cancel" id="missing-info-skip">Skip</button>
+        <button type="submit" class="btn btn--submit" id="missing-info-save">Continue</button>
+      </div>
+    </form>
+  </dialog>
   <dialog class="college-detail-dialog" id="college-detail-dialog" aria-labelledby="detail-college-name">
     <div class="detail-header">
       <h2 class="dialog-title" id="detail-college-name">College name</h2>
@@ -110,6 +126,6 @@
     <p class="form-message" id="detail-status-message" role="status" aria-live="polite"></p>
   </dialog>
 
-  <script src="js/app.js"></script>
+  <script type="module" src="js/app.js"></script>
 </body>
 </html>

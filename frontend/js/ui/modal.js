@@ -1,6 +1,7 @@
 // frontend/js/ui/modal.js
 // College detail dialog: shows one college's details and its application status.
 // The dialog markup lives in index.html (#college-detail-dialog).
+import { normalizeState } from './states.js';
 
 export const APPLICATION_STATUSES = ['pending', 'submitted', 'accepted', 'rejected', 'waitlisted'];
 
@@ -14,10 +15,18 @@ let currentCollege = null;
 
 const el = (id) => document.getElementById(id);
 
-// Parses the date part of "YYYY-MM-DD" or an ISO timestamp as a local calendar date.
-// Returns null for missing or invalid input.
-function parseDeadline(value) {
+/**
+ * Parses a deadline as a local calendar date, so timezones cannot shift the day.
+ * @param {string|Date|null|undefined} value "YYYY-MM-DD", an ISO timestamp, or a Date
+ *   (the pg driver returns DATE columns as Date objects).
+ * @returns {Date|null} Local midnight of that day, or null for missing or invalid input.
+ */
+export function parseDeadline(value) {
   if (!value) return null;
+  if (value instanceof Date) {
+    if (Number.isNaN(value.getTime())) return null;
+    return new Date(value.getFullYear(), value.getMonth(), value.getDate());
+  }
   const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(value));
   if (!match) return null;
   const [, y, m, d] = match.map(Number);
@@ -25,6 +34,16 @@ function parseDeadline(value) {
   // Reject dates that roll over, such as 2025-02-31.
   if (date.getFullYear() !== y || date.getMonth() !== m - 1 || date.getDate() !== d) return null;
   return date;
+}
+
+/**
+ * Formats a calendar date as "YYYY-MM-DD" for display and the date input.
+ * @param {Date} date A local date, such as the result of parseDeadline.
+ * @returns {string}
+ */
+export function formatIsoDate(date) {
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
 /**
@@ -90,17 +109,56 @@ function bindListeners() {
     showStatusMessage('');
   });
 
+  el('detail-deadline-input').addEventListener('change', () => handleDeadlineChange());
+
   for (const button of document.querySelectorAll('#college-detail-dialog .btn--status')) {
     button.addEventListener('click', () => handleStatusClick(button.dataset.status));
   }
 }
 
-// Saves through the optional onStatusChange callback. The highlight moves only after it succeeds.
+// Shows the deadline date, days remaining, and the date input. Also records the saved date,
+// so a failed change can restore it.
+function showDeadlineFields(deadline) {
+  const dueDate = parseDeadline(deadline);
+  const dateText = dueDate ? formatIsoDate(dueDate) : '';
+  el('detail-deadline').textContent = dateText || NO_DEADLINE;
+  el('detail-days-remaining').textContent = formatDaysRemaining(deadline);
+  const input = el('detail-deadline-input');
+  input.value = dateText;
+  input.dataset.savedDate = dateText;
+}
+
+// Saves a changed deadline through the onDeadlineChange callback. The displayed date changes
+// only after the callback resolves. On failure, the input returns to the saved date.
+async function handleDeadlineChange() {
+  if (!currentCollege || !handlers.onDeadlineChange) return;
+  const college = currentCollege;
+  const input = el('detail-deadline-input');
+  const previous = input.dataset.savedDate ?? '';
+  input.disabled = true;
+  try {
+    const saved = await handlers.onDeadlineChange(college, input.value);
+    if (currentCollege === college) {
+      showDeadlineFields(saved ?? input.value);
+      showStatusMessage('Deadline saved.');
+    }
+  } catch (error) {
+    if (currentCollege === college) {
+      input.value = previous;
+      showStatusMessage(`Could not update deadline: ${error.message || 'unknown error'}`);
+    }
+  } finally {
+    input.disabled = !handlers.onDeadlineChange;
+  }
+}
+
+// Runs the optional onStatusChange callback, then moves the highlight. Without a callback
+// the highlight moves right away (UI-only until the API is wired in later tasks).
 async function handleStatusClick(status) {
-  if (!currentCollege || !handlers.onStatusChange) return;
+  if (!currentCollege) return;
   const college = currentCollege;
   try {
-    await handlers.onStatusChange(college, status);
+    if (handlers.onStatusChange) await handlers.onStatusChange(college, status);
     if (currentCollege === college) {
       setPressedStatus(status);
       showStatusMessage('');
@@ -116,6 +174,9 @@ async function handleStatusClick(status) {
  * @param {object} [callbacks]
  * @param {(college: object, status: string) => Promise<void>|void} [callbacks.onStatusChange]
  *   Saves the new status. The highlight moves only after this resolves.
+ * @param {(college: object, deadline: string) => Promise<string|void>|string|void} [callbacks.onDeadlineChange]
+ *   Saves a new deadline ("YYYY-MM-DD", or "" when cleared). May resolve with the saved "YYYY-MM-DD".
+ *   Enables the deadline input. On rejection, the input returns to the saved date.
  */
 export function initDetailModal(callbacks = {}) {
   handlers = callbacks;
@@ -139,15 +200,12 @@ export function openDetailModal(college, details = {}) {
 
   showText('detail-college-name', college.name);
   showText('detail-location', college.location);
-  showText('detail-state', college.state);
+  showText('detail-state', normalizeState(college.state) ?? college.state);
   showText('detail-acceptance-rate', formatAcceptanceRate(college.acceptance_rate ?? college.acceptanceRate));
-  showText('detail-deadline', parseDeadline(deadline) ? String(deadline).slice(0, 10) : NO_DEADLINE);
-  showText('detail-days-remaining', formatDaysRemaining(deadline));
+  showDeadlineFields(deadline);
 
-  // Deadline editing is wired in task 20. Show the current date, but keep the field inactive.
-  const deadlineInput = el('detail-deadline-input');
-  deadlineInput.value = parseDeadline(deadline) ? String(deadline).slice(0, 10) : '';
-  deadlineInput.disabled = true;
+  // The date input is editable only when app.js supplies onDeadlineChange.
+  el('detail-deadline-input').disabled = !handlers.onDeadlineChange;
 
   setPressedStatus(status);
   showStatusMessage('');
