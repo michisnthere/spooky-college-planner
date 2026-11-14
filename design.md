@@ -58,6 +58,10 @@ The system is built using a client-server architecture with separation of concer
 - Zombie icon that moves based on deadline proximity
 - Target completion line
 - Days remaining label
+- Plants vs. Zombies-style lawn lanes on the deadlines.html page, with one lane per tracked college
+- Each lane: a detailed CSS zombie on the left, a sunflower with the college name at the right end, and a days-remaining label between them
+- "Mark as completed" button per lane: plays a zombie death animation, replaces the zombie with a tombstone dated with the completion date, and sets the application status to submitted
+- Days remaining at 0: the sunflower is replaced with a tombstone that reads "deadline has passed"
 
 **Auto-Fill Form**
 - Search input with autocomplete
@@ -67,10 +71,20 @@ The system is built using a client-server architecture with separation of concer
 
 ### 3.2 Styling Approach
 
-- **Theme**: Spooky/Halloween aesthetic (dark colors, tombstones, graveyard imagery)
-- **Layout**: Flexbox for responsive design
+- **Theme**: Night graveyard. The header uses dark purple with orange highlights. The graveyard ground is grass, with muted gray-green tombstones on it. The night sky sits above the graveyard. The moon is a detailed CSS element with craters and a glow. Dialogs use a parchment surface.
+- **Text legibility**: All text on a dark background uses a white outline (for example, layered text-shadow). This applies to black text as well.
+- **Layout**: Flexbox for responsive design, with a single breakpoint at 768px
 - **Scrolling**: Horizontal scroll for graveyard and deadline tracker
-- **Animations**: CSS transitions for zombie movement, card reveals, completion effects
+- **Animations**: CSS keyframes in animations.css: zombieWalk (looping walk), cardReveal (tombstone rises from the grass), zombieDefeat (zombie falls backward, with a dirt particle burst), and modalFadeIn. Animations use only transform and opacity. All animations are disabled under prefers-reduced-motion.
+
+### 3.3 Tombstone Shape System
+
+Each tombstone is a single element with a shape modifier class, for example `.tombstone--rounded`, `.tombstone--pointed`, `.tombstone--cross`, `.tombstone--slab`, and `.tombstone--arched`. Each shape is styled in CSS with layered gradients, borders, and shadows, plus carved-detail and weathering pseudo-elements.
+
+**Future ranking categories (not implemented in the current release):**
+- A `getTombstoneShape(college)` function returns the shape modifier for a college.
+- Colleges in the top 10 category use one shape, colleges in the top 50 category use a different shape, and all other colleges use the default shape.
+- The ranking source is not yet defined. The College Scorecard data does not provide a rank, so the source must be chosen before this feature is built.
 
 ## 4. Backend Architecture
 

@@ -1,0 +1,770 @@
+/* ==========================================================================
+   Spooky College Planner: base styles and night graveyard theme
+   Keyframes live in animations.css. Only the tombstone hover lift uses transform.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Variables
+   -------------------------------------------------------------------------- */
+:root {
+  /* Night sky above the graveyard (dark blue-black, no purple) */
+  --color-sky-top: #04060d;
+  --color-sky-mid: #0a1020;
+  --color-sky-bottom: #16203a;
+
+  /* Header: dark purple with orange highlights */
+  --color-header-top: #3e1a5c;
+  --color-header-bottom: #1d0a2e;
+  --color-header-text: #ffe7bf;
+
+  /* Orange accents for buttons and highlights */
+  --color-accent: #ff8c1a;
+  --color-accent-strong: #d4600a;
+  --color-accent-glow: rgba(255, 140, 26, 0.55);
+
+  /* Muted gray-green stone tones */
+  --color-stone-light: #8e9d90;
+  --color-stone-mid: #69796c;
+  --color-stone-dark: #47564a;
+  --color-stone-edge: #2b352c;
+
+  /* Grass ground under the tombstones */
+  --color-grass-light: #8fd06a;
+  --color-grass-top: #5c9a3c;
+  --color-grass-mid: #3f7a2a;
+  --color-grass-bottom: #2a5a1c;
+  --color-blade-light: rgba(175, 228, 120, 0.3);
+  --color-blade-dark: rgba(8, 34, 6, 0.35);
+  --ground-height: 5.5rem;
+
+  /* Parchment surfaces for header and dialogs */
+  --color-parchment: #f3e9d2;
+  --color-parchment-deep: #ead9b4;
+  --color-parchment-field: #fffaf0;
+  --color-parchment-edge: #b8985e;
+  --color-ink: #2e1140;
+  --color-ink-soft: #55356d;
+  --color-link: #8a3d00;
+
+  /* Text */
+  --color-text-dark: #120818;
+  --text-outline: 0 0 2px #ffffff,
+    1px 0 0 #ffffff, -1px 0 0 #ffffff,
+    0 1px 0 #ffffff, 0 -1px 0 #ffffff,
+    1px 1px 0 #ffffff, -1px -1px 0 #ffffff,
+    1px -1px 0 #ffffff, -1px 1px 0 #ffffff;
+
+  /* Shadows and fonts */
+  --shadow-drop: 0 12px 16px rgba(0, 0, 0, 0.6);
+  --font-display: Georgia, "Times New Roman", serif;
+}
+
+/* --------------------------------------------------------------------------
+   2. Base and reset
+   -------------------------------------------------------------------------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--color-sky-top);
+}
+
+/* Body text sits on the dark sky, so it gets the white outline. */
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-display);
+  color: var(--color-text-dark);
+  background: linear-gradient(to bottom, var(--color-sky-top), var(--color-sky-mid) 60%, var(--color-sky-bottom));
+  background-attachment: fixed;
+  text-shadow: var(--text-outline);
+}
+
+button,
+input {
+  font: inherit;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+.visually-hidden,
+#graveyard-heading {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* --------------------------------------------------------------------------
+   3. Header (dark purple band with orange highlights)
+   Sits on a dark background, so its text gets the white outline.
+   -------------------------------------------------------------------------- */
+.site-header {
+  position: relative;
+  z-index: 2;
+  padding: 1.25rem 1rem 1rem;
+  text-align: center;
+  color: var(--color-header-text);
+  text-shadow: var(--text-outline);
+  background: linear-gradient(to bottom, var(--color-header-top), var(--color-header-bottom));
+  border-bottom: 4px solid var(--color-accent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 140, 26, 0.55),
+    inset 0 -6px 12px -8px rgba(255, 140, 26, 0.5),
+    0 6px 14px rgba(0, 0, 0, 0.5);
+}
+
+.site-title,
+.site-header .site-title {
+  margin: 0;
+  font-size: 2.25rem;
+  letter-spacing: 0.04em;
+  color: var(--color-accent);
+  text-shadow: var(--text-outline);
+}
+
+.site-tagline {
+  margin: 0.35rem 0 0;
+  font-style: italic;
+  color: var(--color-header-text);
+}
+
+.back-link {
+  display: inline-block;
+  margin-top: 0.6rem;
+  font-weight: bold;
+  color: #ffb35c;
+  text-shadow: var(--text-outline);
+}
+
+/* --------------------------------------------------------------------------
+   4. Layout
+   -------------------------------------------------------------------------- */
+.main-content {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* --------------------------------------------------------------------------
+   5. Graveyard scene
+   Horizontal flex row that always scrolls sideways. The sky and ground are
+   background layers, so they stay in place while the tombstones scroll.
+   -------------------------------------------------------------------------- */
+.graveyard,
+#graveyard {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  gap: 1.5rem;
+  flex: 0 0 auto;
+  min-height: 21rem;
+  padding: 2.5rem 1.5rem var(--ground-height);
+  overflow-x: auto;
+  overflow-y: hidden;
+  /* Only grass is painted here. The night sky comes from the body
+     background, so it shows above the grass and behind the tombstones. */
+  background-image:
+    linear-gradient(to bottom, var(--color-grass-light) 0 3px, transparent 3px),
+    repeating-linear-gradient(80deg, var(--color-blade-light) 0 1px, transparent 1px 7px),
+    repeating-linear-gradient(100deg, var(--color-blade-dark) 0 1px, transparent 1px 11px),
+    linear-gradient(to bottom, var(--color-grass-top) 0%, var(--color-grass-mid) 45%, var(--color-grass-bottom) 100%);
+  background-size: 100% var(--ground-height);
+  background-position: left bottom;
+  background-repeat: no-repeat;
+}
+
+/* Moon: a CSS disc in the sky, top right of the graveyard.
+   ::before draws the lit surface and glow. ::after draws the craters. */
+.graveyard::before,
+#graveyard::before {
+  content: "";
+  position: absolute;
+  top: 1.5rem;
+  right: 2rem;
+  width: 4.5rem;
+  height: 4.5rem;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 30% 28%, rgba(255, 255, 255, 0.7) 0 10%, transparent 26%),
+    radial-gradient(circle at 60% 65%, rgba(190, 165, 110, 0.25) 0 30%, transparent 55%),
+    radial-gradient(circle at 35% 35%, #fffbea 0%, #f4e6bd 55%, #d8c188 100%);
+  box-shadow:
+    inset -6px -8px 14px rgba(130, 100, 45, 0.35),
+    0 0 14px 4px rgba(255, 240, 200, 0.35),
+    0 0 40px 14px rgba(255, 236, 190, 0.22),
+    0 0 90px 30px rgba(170, 200, 255, 0.12);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Craters: each crater is a radial gradient that is darker in the middle and
+   has a lighter rim, so it reads as a pit. A pseudo-element cannot hold several
+   separate inset-shadowed circles, so the craters are drawn inside one layer. */
+.graveyard::after,
+#graveyard::after {
+  content: "";
+  position: absolute;
+  top: 1.5rem;
+  right: 2rem;
+  width: 4.5rem;
+  height: 4.5rem;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle 0.6rem at 3.1rem 3.0rem, rgba(110, 85, 45, 0.45) 0 0.35rem, rgba(255, 250, 235, 0.55) 0.5rem, transparent 0.6rem),
+    radial-gradient(circle 0.45rem at 1.35rem 1.45rem, rgba(110, 85, 45, 0.45) 0 0.25rem, rgba(255, 250, 235, 0.55) 0.36rem, transparent 0.45rem),
+    radial-gradient(circle 0.4rem at 2.9rem 1.05rem, rgba(110, 85, 45, 0.42) 0 0.2rem, rgba(255, 250, 235, 0.5) 0.31rem, transparent 0.4rem),
+    radial-gradient(circle 0.3rem at 0.95rem 3.2rem, rgba(110, 85, 45, 0.42) 0 0.15rem, rgba(255, 250, 235, 0.5) 0.23rem, transparent 0.3rem),
+    radial-gradient(circle 0.35rem at 2.2rem 3.7rem, rgba(110, 85, 45, 0.4) 0 0.17rem, rgba(255, 250, 235, 0.5) 0.27rem, transparent 0.35rem);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.college-tombstones,
+#college-tombstones {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  gap: 1.5rem;
+  flex: 0 0 auto;
+}
+
+.special-tombstones {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  gap: 1.5rem;
+  margin-left: 2rem;
+  flex: 0 0 auto;
+}
+
+/* College card: stone button with a delete button under it. */
+.college-tombstone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 0 0 auto;
+}
+
+.tombstone-delete {
+  padding: 0.3rem 0.6rem;
+  font-size: 0.8rem;
+  text-shadow: var(--text-outline);
+}
+
+/* --------------------------------------------------------------------------
+   6. Tombstones
+   Base stone: layered gradients, borders, inset and drop shadows.
+   ::before draws a carved rim. ::after draws weathering spots and cracks.
+   isolation keeps both pseudo-elements behind the text.
+   -------------------------------------------------------------------------- */
+.tombstone {
+  position: relative;
+  isolation: isolate;
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 9.5rem;
+  min-height: 12rem;
+  margin: 0;
+  padding: 2.25rem 0.9rem 1rem;
+  border: 3px solid var(--color-stone-edge);
+  border-radius: 0.5rem 0.5rem 0.25rem 0.25rem;
+  background-color: var(--color-stone-mid);
+  background-image:
+    linear-gradient(105deg, rgba(255, 255, 255, 0.14) 0%, transparent 38%, rgba(0, 0, 0, 0.2) 75%, transparent 100%),
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.06) 0 2px, transparent 2px 8px),
+    linear-gradient(to bottom, var(--color-stone-light) 0%, var(--color-stone-mid) 55%, var(--color-stone-dark) 100%);
+  box-shadow:
+    inset 0 3px 0 rgba(255, 255, 255, 0.18),
+    inset 0 -12px 18px rgba(0, 0, 0, 0.35),
+    inset 8px 0 10px -6px rgba(0, 0, 0, 0.45),
+    inset -8px 0 10px -6px rgba(0, 0, 0, 0.45),
+    var(--shadow-drop);
+  color: var(--color-text-dark);
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: center;
+  text-decoration: none;
+  text-shadow: var(--text-outline);
+  overflow-wrap: anywhere;
+  hyphens: auto;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  transition: transform 0.2s ease-out;
+}
+
+/* Carved rim */
+.tombstone::before {
+  content: "";
+  position: absolute;
+  inset: 0.55rem;
+  border: 1px solid rgba(20, 10, 25, 0.35);
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Weathering: spots, a chip, and a crack */
+.tombstone::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image:
+    radial-gradient(circle at 18% 72%, rgba(0, 0, 0, 0.22) 0 2px, transparent 3px),
+    radial-gradient(circle at 80% 84%, rgba(0, 0, 0, 0.18) 0 3px, transparent 4px),
+    radial-gradient(circle at 70% 22%, rgba(255, 255, 255, 0.12) 0 2px, transparent 3px),
+    linear-gradient(160deg, transparent 46%, rgba(0, 0, 0, 0.25) 47%, transparent 49%),
+    linear-gradient(20deg, transparent 62%, rgba(0, 0, 0, 0.2) 63%, transparent 65%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.tombstone:hover,
+.tombstone:focus-visible {
+  transform: translateY(-6px);
+}
+
+/* Shapes. Each one is a single element with a modifier class. */
+
+/* Rounded top: semicircle over a square base. Used by the two special tombstones. */
+.tombstone--rounded {
+  border-radius: 4.75rem 4.75rem 0.4rem 0.4rem;
+  min-height: 13rem;
+}
+
+/* Pointed top: clip-path cuts a point and angled shoulders. */
+.tombstone--pointed {
+  border-width: 0;
+  border-radius: 0;
+  min-height: 13.5rem;
+  padding-top: 3.2rem;
+  clip-path: polygon(50% 0, 100% 20%, 100% 100%, 0 100%, 0 20%);
+}
+
+/* Cross: the crossbar carries the name. The arms are cut by clip-path. */
+.tombstone--cross {
+  width: 11rem;
+  min-height: 14rem;
+  border-width: 0;
+  border-radius: 0;
+  justify-content: flex-start;
+  padding: 3.9rem 0.75rem 0;
+  clip-path: polygon(
+    36% 0, 64% 0, 64% 28%, 100% 28%, 100% 52%, 64% 52%,
+    64% 100%, 36% 100%, 36% 52%, 0 52%, 0 28%, 36% 28%
+  );
+}
+
+.tombstone--cross::before {
+  display: none;
+}
+
+/* Slab: flat, thick, squared-off top. */
+.tombstone--slab {
+  width: 10.5rem;
+  min-height: 9.5rem;
+  border-width: 4px;
+  border-radius: 0.35rem 0.35rem 0.15rem 0.15rem;
+  padding-top: 1.5rem;
+}
+
+/* Arched: flatter elliptical top. */
+.tombstone--arched {
+  min-height: 11.5rem;
+  border-radius: 4.75rem 4.75rem 0.25rem 0.25rem / 2.5rem 2.5rem 0.25rem 0.25rem;
+}
+
+/* Special tombstones: Add College and Deadline Tracker */
+.tombstone--special {
+  min-height: 13rem;
+}
+
+.tombstone--add,
+#add-college-button {
+  border-color: var(--color-accent-strong);
+}
+
+.tombstone--deadline,
+#deadline-tracker-link {
+  border-color: #5a2d82;
+}
+
+/* --------------------------------------------------------------------------
+   7. Dialogs (parchment surface, readable backdrop, no outline)
+   -------------------------------------------------------------------------- */
+#add-college-dialog,
+#college-detail-dialog,
+.add-college-dialog,
+.college-detail-dialog {
+  width: min(92vw, 34rem);
+  max-width: 92vw;
+  max-height: 90vh;
+  margin: auto;
+  padding: 1.5rem 1.6rem;
+  overflow-y: auto;
+  border: 3px solid var(--color-parchment-edge);
+  border-radius: 0.9rem;
+  background: linear-gradient(to bottom, #fbf4e1, var(--color-parchment) 70%, var(--color-parchment-deep));
+  color: var(--color-ink);
+  text-shadow: none;
+  box-shadow:
+    0 18px 40px rgba(0, 0, 0, 0.6),
+    inset 0 0 0 4px rgba(255, 255, 255, 0.35),
+    inset 0 0 40px rgba(120, 80, 30, 0.18);
+}
+
+dialog::backdrop {
+  background: rgba(7, 2, 14, 0.78);
+}
+
+.dialog-title,
+#add-college-title,
+#detail-college-name,
+#deadline-page-heading {
+  margin: 0 0 1rem;
+  font-size: 1.5rem;
+  color: var(--color-ink);
+  text-shadow: none;
+}
+
+/* The deadline page sits on the dark sky, so its heading gets the outline. */
+.deadline-page .dialog-title,
+#deadline-page-heading {
+  color: var(--color-text-dark);
+  text-shadow: var(--text-outline);
+}
+
+/* Form */
+.add-college-form,
+#add-college-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.form-field label,
+.detail-deadline-edit label {
+  font-weight: bold;
+  font-size: 0.95rem;
+  color: var(--color-ink);
+}
+
+.form-field input,
+.detail-deadline-edit input,
+#college-search,
+#college-location,
+#college-state,
+#college-acceptance-rate,
+#college-deadline,
+#detail-deadline-input {
+  width: 100%;
+  padding: 0.55rem 0.65rem;
+  border: 2px solid var(--color-parchment-edge);
+  border-radius: 0.4rem;
+  background: var(--color-parchment-field);
+  color: var(--color-ink);
+  text-shadow: none;
+}
+
+.form-field input:focus,
+.detail-deadline-edit input:focus {
+  outline: none;
+  border-color: var(--color-accent-strong);
+  box-shadow: 0 0 0 3px var(--color-accent-glow);
+}
+
+.college-suggestions,
+#college-suggestions {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: 9rem;
+  overflow-y: auto;
+  border: 2px solid var(--color-parchment-edge);
+  border-radius: 0.4rem;
+  background: var(--color-parchment-field);
+}
+
+.college-suggestions li {
+  padding: 0.45rem 0.65rem;
+  cursor: pointer;
+  color: var(--color-ink);
+}
+
+.college-suggestions li:hover {
+  background: var(--color-parchment-deep);
+}
+
+.form-message,
+#add-college-message {
+  margin: 0;
+  min-height: 1.3em;
+  font-weight: bold;
+  color: var(--color-link);
+  text-shadow: none;
+}
+
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+/* Buttons */
+.btn {
+  padding: 0.55rem 1.1rem;
+  border: 2px solid var(--color-ink);
+  border-radius: 0.45rem;
+  background: var(--color-parchment-field);
+  color: var(--color-ink);
+  font-weight: bold;
+  text-shadow: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.btn:hover {
+  background: var(--color-parchment-deep);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn--submit,
+#add-college-submit {
+  background: linear-gradient(to bottom, #ffab4a, var(--color-accent) 50%, var(--color-accent-strong));
+  border-color: var(--color-accent-strong);
+  color: var(--color-text-dark);
+}
+
+.btn--submit:hover,
+#add-college-submit:hover {
+  background: linear-gradient(to bottom, #ffbd6e, #ffa033 50%, #e06e14);
+}
+
+.btn--cancel,
+#add-college-cancel {
+  background: transparent;
+}
+
+.btn--close,
+#detail-close-button {
+  padding: 0.4rem 0.8rem;
+}
+
+/* Detail dialog */
+.detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.detail-header .dialog-title {
+  margin: 0;
+}
+
+.detail-list {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.5rem 1rem;
+  margin: 0 0 1.25rem;
+}
+
+.detail-list dt {
+  font-weight: bold;
+  color: var(--color-ink-soft);
+}
+
+.detail-list dd,
+#detail-location,
+#detail-state,
+#detail-acceptance-rate,
+#detail-deadline {
+  margin: 0;
+  color: var(--color-ink);
+  overflow-wrap: anywhere;
+}
+
+#detail-days-remaining {
+  font-weight: bold;
+  color: var(--color-link);
+}
+
+.detail-deadline-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-bottom: 1.25rem;
+}
+
+.status-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0.75rem;
+  border: 2px dashed var(--color-parchment-edge);
+  border-radius: 0.5rem;
+}
+
+.status-actions legend {
+  padding: 0 0.3rem;
+  font-weight: bold;
+  color: var(--color-ink);
+}
+
+.btn--status {
+  min-width: 6.5rem;
+}
+
+/* --------------------------------------------------------------------------
+   8. Deadline page (deadlines.html)
+   -------------------------------------------------------------------------- */
+.deadline-page {
+  flex: 0 0 auto;
+  width: min(94%, 60rem);
+  margin: 2rem auto;
+}
+
+.deadline-track,
+#deadline-track {
+  display: flex;
+  align-items: center;
+  min-height: 8rem;
+  padding: 1rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  border-bottom: 4px solid var(--color-accent);
+  border-radius: 0.5rem;
+  background: linear-gradient(to right, rgba(20, 8, 35, 0.6), rgba(60, 25, 90, 0.6));
+}
+
+/* --------------------------------------------------------------------------
+   9. Responsive: single breakpoint at 768px
+   The graveyard keeps horizontal scrolling at every width.
+   -------------------------------------------------------------------------- */
+@media (max-width: 768px) {
+  .site-header {
+    padding: 1rem 0.75rem 0.8rem;
+  }
+
+  .site-title,
+  .site-header .site-title {
+    font-size: 1.7rem;
+  }
+
+  .graveyard,
+  #graveyard {
+    min-height: 19rem;
+    padding: 2rem 1rem var(--ground-height);
+    gap: 1rem;
+  }
+
+  .college-tombstones,
+  #college-tombstones,
+  .special-tombstones {
+    gap: 1rem;
+  }
+
+  .special-tombstones {
+    margin-left: 1rem;
+  }
+
+  .tombstone {
+    font-size: 0.85rem;
+  }
+
+  .deadline-page {
+    width: 94%;
+    margin: 1rem auto;
+  }
+
+  #add-college-dialog,
+  #college-detail-dialog,
+  .add-college-dialog,
+  .college-detail-dialog {
+    width: 94vw;
+    padding: 1.1rem;
+  }
+
+  .add-college-form,
+  #add-college-form {
+    gap: 0.75rem;
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .form-actions .btn {
+    width: 100%;
+  }
+
+  .detail-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .detail-list {
+    grid-template-columns: 1fr;
+    gap: 0.15rem 0;
+  }
+
+  .detail-list dt {
+    margin-top: 0.4rem;
+  }
+
+  .status-actions .btn--status {
+    flex: 1 1 40%;
+  }
+}
+
+/* Detail dialog: the button for the saved application status is pressed. */
+.btn--status[aria-pressed="true"] {
+  background: var(--color-parchment-deep);
+  box-shadow: inset 0 0 0 2px var(--color-ink);
+  font-weight: 800;
+}

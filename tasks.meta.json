@@ -18,6 +18,30 @@
         "executionId": "7e7536a2-d971-462d-a8da-a6f2624bb160",
         "chatSessionId": "sess_90950f11-0d15-48f9-9355-37ae62e83652",
         "timestamp": 1794668645840
+      },
+      {
+        "executionId": "d251b40d-e47a-47b1-9331-9d9ffafd1bc8",
+        "chatSessionId": "sess_90950f11-0d15-48f9-9355-37ae62e83652",
+        "timestamp": 1794668972642
+      }
+    ],
+    "11. Base CSS & Spooky Theme Styling": [
+      {
+        "executionId": "3b66c704-a4b6-4d55-b578-38c72fb50ade",
+        "chatSessionId": "sess_90950f11-0d15-48f9-9355-37ae62e83652",
+        "timestamp": 1794669426337
+      },
+      {
+        "executionId": "c27b0027-a9af-4f90-b2bc-5b5b71db58a5",
+        "chatSessionId": "sess_90950f11-0d15-48f9-9355-37ae62e83652",
+        "timestamp": 1794674022105
+      }
+    ],
+    "12. CSS Animations (Zombie, Cards, Transitions)": [
+      {
+        "executionId": "c27b0027-a9af-4f90-b2bc-5b5b71db58a5",
+        "chatSessionId": "sess_90950f11-0d15-48f9-9355-37ae62e83652",
+        "timestamp": 1794674080267
       }
     ]
   }

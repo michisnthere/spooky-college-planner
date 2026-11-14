@@ -22,10 +22,10 @@
       </div>
 
       <div class="special-tombstones">
-        <button type="button" class="tombstone tombstone--special tombstone--add" id="add-college-button" aria-haspopup="dialog" aria-controls="add-college-dialog">
+        <button type="button" class="tombstone tombstone--special tombstone--rounded tombstone--add" id="add-college-button" aria-haspopup="dialog" aria-controls="add-college-dialog">
           Add College
         </button>
-        <a class="tombstone tombstone--special tombstone--deadline" id="deadline-tracker-link" href="deadlines.html">
+        <a class="tombstone tombstone--special tombstone--rounded tombstone--deadline" id="deadline-tracker-link" href="deadlines.html">
           Deadline Tracker
         </a>
       </div>
@@ -106,6 +106,8 @@
       <button type="button" class="btn btn--status" data-status="rejected">Rejected</button>
       <button type="button" class="btn btn--status" data-status="waitlisted">Waitlisted</button>
     </fieldset>
+
+    <p class="form-message" id="detail-status-message" role="status" aria-live="polite"></p>
   </dialog>
 
   <script src="js/app.js"></script>

@@ -159,7 +159,7 @@ Each task lists its steps and verification checks as plain bullets. Only the top
 
 ### Frontend Setup Phase
 
-- [-] 10. HTML Structure & Layout
+- [x] 10. HTML Structure & Layout
   - Description: Create base HTML file with layout sections.
   - Steps:
     1. Create frontend/index.html.
@@ -170,26 +170,26 @@ Each task lists its steps and verification checks as plain bullets. Only the top
     - frontend/index.html opens in a browser with all sections visible and no console errors.
     - The page title shows "Spooky College Planner."
 
-- [ ] 11. Base CSS & Spooky Theme Styling
+- [x] 11. Base CSS & Spooky Theme Styling
   - Description: Create main CSS with spooky aesthetic.
   - Steps:
     1. Create frontend/css/style.css.
-    2. Define color variables (dark purple, orange, black, graveyard green).
-    3. Style body, header, graveyard, form, and modal.
+    2. Define color variables: dark purple header with orange highlights, grass green graveyard ground, muted gray-green stone tones, and a white outline for text on dark backgrounds.
+    3. Style body, header, grass graveyard, form, modal, detailed tombstones in rounded, pointed, cross, slab, and arched shapes, and a detailed moon with craters and a glow.
     4. Use flexbox for layout.
-    5. Add responsive breakpoints.
+    5. Add a single responsive breakpoint at 768px.
   - Verification:
     - The page has a dark theme.
     - The graveyard scrolls horizontally.
     - The layout is responsive on a mobile view.
 
-- [ ] 12. CSS Animations (Zombie, Cards, Transitions)
-  - Description: Create CSS keyframe animations.
+- [-] 12. CSS Animations (Zombie, Cards, Transitions)
+  - Description: Create CSS keyframe animations for the zombie walk, tombstone reveal, zombie defeat with a dirt burst, and modal fade-in, disabled under reduced motion.
   - Steps:
     1. Create frontend/css/animations.css.
-    2. Define zombieWalk, cardReveal, zombieDefeat, and modalFadeIn animations.
+    2. Define zombieWalk (looping walk), cardReveal (tombstone rises from the grass), zombieDefeat (zombie falls backward, with dirt particles), and modalFadeIn.
     3. Use CSS transforms for performance.
-    4. Set durations (zombie 0.5s, card 0.3s).
+    4. Set durations (zombie 0.5s, card 0.3s). Add a prefers-reduced-motion media query that disables all animations.
   - Verification:
     - Animations play smoothly with no stutter.
 
@@ -215,15 +215,15 @@ Each task lists its steps and verification checks as plain bullets. Only the top
     - The modal opens on tombstone click, shows the correct details, and closes by all three methods.
 
 - [ ] 15. Deadline Tracker Component
-  - Description: Create horizontal deadline tracker with zombie icon on the separate deadlines.html page.
+  - Description: Create a Plants vs. Zombies-style lane tracker on the separate deadlines.html page, with one lane per college, a detailed zombie, a sunflower end marker, a days-remaining label, and a Mark as completed button per lane.
   - Steps:
     1. Create frontend/js/ui/deadline-tracker.js.
     2. Implement initDeadlineTracker().
     3. Implement updateZombiePosition() with the position calculation.
-    4. Display zombie icon, target line, and days remaining.
-    5. Add smooth transitions.
+    4. Display one lane per college with a detailed CSS zombie, a sunflower end marker showing the college name, and days remaining between them.
+    5. Add smooth transitions. Add a Mark as completed button per lane that plays a zombie death animation, replaces the zombie with a tombstone dated with the completion date, and calls apiClient.updateApplicationStatus() with submitted. When days remaining reaches 0, replace the sunflower with a tombstone that reads "deadline has passed."
   - Verification:
-    - The zombie moves smoothly and its position matches days remaining.
+    - Each college has its own lane. The zombie position matches days remaining. Mark as completed plays the death animation and leaves a dated tombstone. A deadline at 0 days shows "deadline has passed."
 
 - [ ] 16. Auto-Fill College Form
   - Description: Create the add-college form, shown inside the add-college dialog, with college search and auto-fill.

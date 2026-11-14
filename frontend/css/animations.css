@@ -1,0 +1,182 @@
+/* ==========================================================================
+   Spooky College Planner: CSS animations
+   Keyframes for the zombie walk, tombstone reveal, zombie defeat with a dirt
+   burst, and dialog fade-in. Only transform and opacity are animated, so the
+   browser can run them on the GPU. Every class here is disabled under
+   prefers-reduced-motion at the end of this file.
+   The classes are attached to elements by later tasks. Nothing is wired yet.
+   The tombstone hover lift transition is defined in style.css, not here.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Zombie walk
+   Looping bob and small sway. One cycle is 0.5s.
+   -------------------------------------------------------------------------- */
+@keyframes zombieWalk {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(1px, -3px);
+  }
+  50% {
+    transform: translate(2px, 0);
+  }
+  75% {
+    transform: translate(1px, -3px);
+  }
+}
+
+.zombie--walking {
+  animation: zombieWalk 0.5s linear infinite;
+}
+
+/* --------------------------------------------------------------------------
+   2. Tombstone reveal
+   The stone rises from below the grass. "backwards" fill keeps the hover lift
+   working once the animation ends.
+   -------------------------------------------------------------------------- */
+@keyframes cardReveal {
+  from {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.tombstone--reveal {
+  animation: cardReveal 0.3s ease-out backwards;
+}
+
+/* --------------------------------------------------------------------------
+   3. Zombie defeat and dirt burst
+   The zombie tips backward around its base and fades out. "forwards" fill
+   keeps it fallen and transparent at the end.
+   -------------------------------------------------------------------------- */
+@keyframes zombieDefeat {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 1;
+  }
+  60% {
+    transform: translate(-8px, 0) rotate(-70deg);
+    opacity: 1;
+  }
+  80% {
+    transform: translate(-12px, 2px) rotate(-90deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-12px, 2px) rotate(-90deg);
+    opacity: 0;
+  }
+}
+
+.zombie--defeated {
+  transform-origin: 50% 100%;
+  animation: zombieDefeat 0.8s ease-in forwards;
+}
+
+/* Dirt particles. Each cluster is a set of radial-gradient dots on a
+   pseudo-element. Both clusters move outward and fade. The --dirt-dx and
+   --dirt-dy custom properties set each cluster's direction. */
+@keyframes dirtBurst {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.4);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--dirt-dx), var(--dirt-dy)) scale(1);
+  }
+}
+
+.dirt-burst {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.dirt-burst::before,
+.dirt-burst::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: -14px;
+  width: 28px;
+  height: 20px;
+  opacity: 0;
+  background:
+    radial-gradient(circle at 25% 60%, #6b4a2a 2px, transparent 3px),
+    radial-gradient(circle at 70% 35%, #4a3219 2px, transparent 3px),
+    radial-gradient(circle at 50% 80%, #8a6038 1.5px, transparent 2.5px);
+  animation: dirtBurst 0.6s ease-out forwards;
+}
+
+.dirt-burst::before {
+  --dirt-dx: -26px;
+  --dirt-dy: -18px;
+}
+
+.dirt-burst::after {
+  --dirt-dx: 26px;
+  --dirt-dy: -22px;
+  animation-delay: 0.05s;
+}
+
+/* --------------------------------------------------------------------------
+   4. Dialog fade-in
+   Opacity with a small upward slide. Apply the class to a dialog when it
+   opens.
+   -------------------------------------------------------------------------- */
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dialog--fade-in {
+  animation: modalFadeIn 0.25s ease-out backwards;
+}
+
+/* --------------------------------------------------------------------------
+   5. Reduced motion
+   When the operating system asks for reduced motion, every animation and
+   transition in this file stops. This includes the tombstone and dialog
+   selectors from style.css. This block must stay last so it wins the
+   cascade, and animations.css must load after style.css.
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .zombie--walking,
+  .tombstone--reveal,
+  .zombie--defeated,
+  .dirt-burst,
+  .dirt-burst::before,
+  .dirt-burst::after,
+  .dialog--fade-in,
+  .tombstone,
+  .btn,
+  dialog,
+  #add-college-dialog,
+  #college-detail-dialog,
+  .add-college-dialog,
+  .college-detail-dialog {
+    animation: none;
+    transition: none;
+  }
+}
