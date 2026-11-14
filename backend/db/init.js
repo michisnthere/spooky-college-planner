@@ -1,7 +1,7 @@
 // backend/db/init.js
 // Initialize database with schema
 
-require('dotenv').config({ path: './backend/config/.env' });
+require('dotenv').config({ path: './.env' });
 const fs = require('fs');
 const path = require('path');
 const { pool } = require('./connection');

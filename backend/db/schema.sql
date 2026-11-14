@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS students (
 -- Create colleges table
 CREATE TABLE IF NOT EXISTS colleges (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  student_id UUID NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+  student_id VARCHAR(255),
   name VARCHAR(255) NOT NULL,
   state VARCHAR(2),
   location VARCHAR(255),
@@ -24,9 +24,9 @@ CREATE TABLE IF NOT EXISTS colleges (
 -- Create applications table
 CREATE TABLE IF NOT EXISTS applications (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  student_id UUID NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+  student_id VARCHAR(255),
   college_id UUID NOT NULL REFERENCES colleges(id) ON DELETE CASCADE,
-  status VARCHAR(50) DEFAULT ''pending'' CHECK (status IN (''pending'', ''submitted'', ''accepted'', ''rejected'', ''waitlisted'')),
+  status VARCHAR(50) DEFAULT 'pending' CHECK (status IN ('pending', 'submitted', 'accepted', 'rejected', 'waitlisted')),
   deadline_date DATE,
   days_remaining INT,
   submitted_at TIMESTAMP,
@@ -39,6 +39,3 @@ CREATE INDEX IF NOT EXISTS idx_colleges_student_id ON colleges(student_id);
 CREATE INDEX IF NOT EXISTS idx_applications_student_id ON applications(student_id);
 CREATE INDEX IF NOT EXISTS idx_applications_college_id ON applications(college_id);
 CREATE INDEX IF NOT EXISTS idx_applications_deadline ON applications(deadline_date);
-
--- Log successful schema creation
-SELECT ''? Database schema created successfully'' as status;
