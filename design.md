@@ -1,4 +1,4 @@
-﻿# Spooky College Planner - Technical Design
+# Spooky College Planner - Technical Design
 
 ## 1. System Overview
 
@@ -12,8 +12,8 @@ The system is built using a client-server architecture with separation of concer
 
 **Frontend (HTML/CSS/Vanilla JavaScript)**
 - Graveyard visualization and tombstone cards
-- Deadline tracker with zombie progression
-- College input form with auto-fill
+- Deadline page (separate page, opened from the Deadline Tracker tombstone) with zombie progression
+- Add College dialog containing the auto-fill form
 - Detail view modal
 
 **Backend (Node.js + Express)**
@@ -38,8 +38,8 @@ The system is built using a client-server architecture with separation of concer
 **Main Dashboard**
 - Graveyard container (horizontally scrollable)
 - Tombstone cards (one per college)
-- Add college form at the bottom
-- Deadline tracker horizontal bar (top or bottom)
+- "Add College" tombstone that opens the add-college dialog
+- "Deadline Tracker" tombstone that opens deadlines.html
 
 **Tombstone Card Component**
 - College name (RIP text)
@@ -181,6 +181,7 @@ updated_at (timestamp)
 spooky-college-planner/
 ├── frontend/
 │   ├── index.html
+│   ├── deadlines.html
 │   ├── css/
 │   │   ├── style.css (main styles)
 │   │   └── animations.css (zombie, card animations)

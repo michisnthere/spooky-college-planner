@@ -1,4 +1,4 @@
-﻿# Implementation Plan: Spooky College Planner
+# Implementation Plan: Spooky College Planner
 
 ## Overview
 
@@ -159,12 +159,12 @@ Each task lists its steps and verification checks as plain bullets. Only the top
 
 ### Frontend Setup Phase
 
-- [ ] 10. HTML Structure & Layout
+- [-] 10. HTML Structure & Layout
   - Description: Create base HTML file with layout sections.
   - Steps:
     1. Create frontend/index.html.
     2. Add semantic HTML5 structure.
-    3. Include header, graveyard container, deadline tracker, form, and modal.
+    3. Include header, graveyard container with Add College and Deadline Tracker tombstones, the add-college dialog, the detail dialog, and a separate deadlines.html page.
     4. Add script and link tags for CSS and JS.
   - Verification:
     - frontend/index.html opens in a browser with all sections visible and no console errors.
@@ -215,7 +215,7 @@ Each task lists its steps and verification checks as plain bullets. Only the top
     - The modal opens on tombstone click, shows the correct details, and closes by all three methods.
 
 - [ ] 15. Deadline Tracker Component
-  - Description: Create horizontal deadline tracker with zombie icon.
+  - Description: Create horizontal deadline tracker with zombie icon on the separate deadlines.html page.
   - Steps:
     1. Create frontend/js/ui/deadline-tracker.js.
     2. Implement initDeadlineTracker().
@@ -226,7 +226,7 @@ Each task lists its steps and verification checks as plain bullets. Only the top
     - The zombie moves smoothly and its position matches days remaining.
 
 - [ ] 16. Auto-Fill College Form
-  - Description: Create form with college search and auto-fill.
+  - Description: Create the add-college form, shown inside the add-college dialog, with college search and auto-fill.
   - Steps:
     1. Create frontend/js/ui/form.js.
     2. Implement initForm(), setupSearchInput(), and handleSearch().

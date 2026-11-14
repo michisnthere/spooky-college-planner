@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spooky College Planner</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+  <header class="site-header">
+    <h1 class="site-title">Spooky College Planner</h1>
+    <p class="site-tagline">Bury your college worries and track every deadline.</p>
+  </header>
+
+  <main class="main-content">
+    <section class="graveyard" id="graveyard" aria-labelledby="graveyard-heading">
+      <h2 id="graveyard-heading" class="visually-hidden">Your college graveyard</h2>
+
+      <div class="college-tombstones" id="college-tombstones" aria-live="polite">
+        <!-- College tombstone cards are rendered here by the graveyard script (Tasks 13 and 19). -->
+      </div>
+
+      <div class="special-tombstones">
+        <button type="button" class="tombstone tombstone--special tombstone--add" id="add-college-button" aria-haspopup="dialog" aria-controls="add-college-dialog">
+          Add College
+        </button>
+        <a class="tombstone tombstone--special tombstone--deadline" id="deadline-tracker-link" href="deadlines.html">
+          Deadline Tracker
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <dialog class="add-college-dialog" id="add-college-dialog" aria-labelledby="add-college-title">
+    <h2 class="dialog-title" id="add-college-title">Add a College</h2>
+    <form class="add-college-form" id="add-college-form">
+      <div class="form-field">
+        <label for="college-search">College name</label>
+        <input type="search" id="college-search" name="collegeName" autocomplete="off" aria-controls="college-suggestions" required>
+        <ul class="college-suggestions" id="college-suggestions" hidden></ul>
+      </div>
+
+      <div class="form-field">
+        <label for="college-location">Location</label>
+        <input type="text" id="college-location" name="location">
+      </div>
+
+      <div class="form-field">
+        <label for="college-state">State</label>
+        <input type="text" id="college-state" name="state">
+      </div>
+
+      <div class="form-field">
+        <label for="college-acceptance-rate">Acceptance rate (%)</label>
+        <input type="number" id="college-acceptance-rate" name="acceptanceRate" min="0" max="100" step="0.1">
+      </div>
+
+      <div class="form-field">
+        <label for="college-deadline">Application deadline</label>
+        <input type="date" id="college-deadline" name="deadlineDate">
+      </div>
+
+      <p class="form-message" id="add-college-message" role="status" aria-live="polite"></p>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn--cancel" id="add-college-cancel">Cancel</button>
+        <button type="submit" class="btn btn--submit" id="add-college-submit">Add College</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="college-detail-dialog" id="college-detail-dialog" aria-labelledby="detail-college-name">
+    <div class="detail-header">
+      <h2 class="dialog-title" id="detail-college-name">College name</h2>
+      <button type="button" class="btn btn--close" id="detail-close-button" aria-label="Close details">Close</button>
+    </div>
+
+    <dl class="detail-list">
+      <dt>Location</dt>
+      <dd id="detail-location">Location</dd>
+
+      <dt>State</dt>
+      <dd id="detail-state">State</dd>
+
+      <dt>Acceptance rate</dt>
+      <dd id="detail-acceptance-rate">Acceptance rate</dd>
+
+      <dt>Deadline</dt>
+      <dd id="detail-deadline">Deadline</dd>
+
+      <dt>Days remaining</dt>
+      <dd id="detail-days-remaining">Days remaining</dd>
+    </dl>
+
+    <div class="detail-deadline-edit">
+      <label for="detail-deadline-input">Update deadline</label>
+      <input type="date" id="detail-deadline-input" name="detailDeadline">
+    </div>
+
+    <fieldset class="status-actions">
+      <legend>Application status</legend>
+      <button type="button" class="btn btn--status" data-status="pending">Pending</button>
+      <button type="button" class="btn btn--status" data-status="submitted">Submitted</button>
+      <button type="button" class="btn btn--status" data-status="accepted">Accepted</button>
+      <button type="button" class="btn btn--status" data-status="rejected">Rejected</button>
+      <button type="button" class="btn btn--status" data-status="waitlisted">Waitlisted</button>
+    </fieldset>
+  </dialog>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

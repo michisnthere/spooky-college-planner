@@ -11,11 +11,11 @@ As a student managing multiple applications, I want to see my schools represente
 ## 3. Functional Requirements
 
 ### 3.1 Graveyard Layout & Tombstones
-The system shall render a horizontally scrollable graveyard interface displaying a tombstone card for each saved college.
+The system shall render a horizontally scrollable graveyard interface displaying a tombstone card for each saved college. The graveyard also shall display two special tombstones: an "Add College" tombstone, which opens a dialog containing the add-college form, and a "Deadline Tracker" tombstone, which opens the separate deadline page.
 When a user clicks on a specific tombstone card, the system shall display a zoomed-in detail view showing relevant information such as location, state, and acceptance rate.
 
 ### 3.2 Plants vs. Zombies Deadline Tracker
-The system shall display a horizontal deadline track where a zombie icon advances progressively toward a target line as the application deadline draws closer.
+The system shall display, on the separate deadline page, a horizontal deadline track where a zombie icon advances progressively toward a target line as the application deadline draws closer.
 When a user inputs or updates a college deadline, the system shall calculate the remaining days and automatically position the zombie icon along the timeline track.
 When a user marks an application status as "Submitted", the system shall trigger a completion animation (e.g., removing or defeating the zombie icon).
 
