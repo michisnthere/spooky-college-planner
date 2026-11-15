@@ -5,8 +5,8 @@
 //   error:   {success: false, error, code}
 // Successful calls resolve with `data`. Failed calls throw an ApiError with `code`, `message`, and `status`.
 
-/** Backend base URL when none is configured. */
-export const DEFAULT_BASE_URL = 'http://localhost:3000';
+/** Backend base URL when none is configured. Empty means same origin: requests go to /api on the host that served the page. */
+export const DEFAULT_BASE_URL = '';
 
 /** Longest a request may run, in milliseconds (design 8.1). */
 export const DEFAULT_TIMEOUT_MS = 5000;

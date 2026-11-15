@@ -1,8 +1,8 @@
-# Implementation Plan: Spooky College Planner
+﻿# Implementation Plan: Spooky College Planner
 
 ## Overview
 
-Tasks run in order. Each task depends on the one before it, so the tracker runs one task at a time. Tasks 1 through 31 are complete. Work resumes at Task 32.
+Tasks run in order. Each task depends on the one before it, so the tracker runs one task at a time. Tasks 1 through 32 are complete. Work resumes at Task 33.
 
 Each task lists its steps and verification checks as plain bullets. Only the top-level task line is a checkbox, so the tracker counts one item per task.
 
@@ -42,7 +42,10 @@ Each task lists its steps and verification checks as plain bullets. Only the top
     { "wave": 29, "tasks": ["29"] },
     { "wave": 30, "tasks": ["30"] },
     { "wave": 31, "tasks": ["31"] },
-    { "wave": 32, "tasks": ["32"] }
+    { "wave": 32, "tasks": ["32"] },
+    { "wave": 33, "tasks": ["33"] },
+    { "wave": 34, "tasks": ["34"] },
+    { "wave": 35, "tasks": ["35"] }
   ]
 }
 ```
@@ -413,6 +416,42 @@ Each task lists its steps and verification checks as plain bullets. Only the top
     5. Convert the todo test in tests/error-handling-backend.test.js into a passing test.
   - Verification:
     - A second POST for the same college returns 409 and the table holds one row. The full test suite passes with the backend running and E2E_LIVE=1.
+
+## Deployment (Render, single host)
+
+- [x] 33. Serve Frontend From Express
+  - Description: Serve the frontend from the backend so one Render web service hosts the whole app, and make the API base URL relative.
+  - Steps:
+    1. Serve frontend/ as static files from backend/server.js, after the /api routes are registered, with index.html at / and deadlines.html at /deadlines.html.
+    2. Change DEFAULT_BASE_URL in frontend/js/api/client.js to a relative base (empty string) so requests go to /api on the same origin. Keep the SPOOKY_API_BASE_URL override.
+    3. Keep unknown /api routes returning the JSON 404 envelope.
+    4. Update CORS so same-origin requests work without CORS_ORIGIN, and CORS_ORIGIN still applies to listed origins.
+    5. Update tests that assume the localhost:3000 default.
+  - Verification:
+    - With only the backend running on port 3000, opening http://localhost:3000/ loads the graveyard, adds a college, and survives a refresh. /deadlines.html loads. Unknown /api paths return JSON 404.
+
+- [x] 34. Production Hardening
+  - Description: Add basic security and reproducibility for a public deploy.
+  - Steps:
+    1. Add helmet with a content security policy that allows the app's own scripts and styles. Check the pages for CSP errors in headless Chrome.
+    2. Add express-rate-limit: a general limit on /api, and tighter limits on /api/lookup and POST /api/students. Return the standard error envelope with code RATE_LIMITED.
+    3. Set trust proxy for Render so rate limiting uses the client IP.
+    4. Remove package-lock.json from .gitignore and make sure it is up to date. Add an engines field to package.json for a pinned Node version.
+    5. In production (NODE_ENV=production), exit with a non-zero code if the database connection test fails at startup. In development keep the current log-and-continue behavior.
+    6. Listen on process.env.PORT and bind 0.0.0.0.
+  - Verification:
+    - Security headers are present, no CSP errors in the browser, a burst of lookup requests returns 429 in the error envelope, and the full test suite passes.
+
+- [x] 35. Render Deployment Config & Docs
+  - Description: Add the files and steps needed to deploy to Render with a hosted PostgreSQL database.
+  - Steps:
+    1. Add render.yaml with a Node web service (build npm ci, start npm start, health check path /api/health) and a PostgreSQL database, with DATABASE_URL taken from the database and secrets (COLLEGE_SCORECARD_API_KEY) marked sync: false.
+    2. Make backend/db/connection.js accept an SSL setting for hosted databases (for example DATABASE_SSL=true or ssl when NODE_ENV=production), without breaking local use.
+    3. Verify backend/db/init.js plus schema.sql alone creates the current schema (full state names VARCHAR(50), unique index on applications.college_id) on an empty database. Use a temporary scratch database and drop it afterwards.
+    4. Update backend/config/.env.example with every variable the app reads.
+    5. Add DEPLOY.md with step-by-step Render instructions: create the repo, create the database and service, set environment variables, run init.js once, check /api/health, and a post-deploy smoke test checklist. Note that the free database may expire.
+  - Verification:
+    - init.js creates the full schema on an empty database. The server starts with NODE_ENV=production against a database with SSL settings configured. DEPLOY.md steps are complete and match render.yaml.
 
 ## Notes
 

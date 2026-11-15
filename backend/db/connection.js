@@ -4,9 +4,20 @@
 const { Pool } = require('pg');
 require('dotenv').config({ path: './.env' });
 
+// DATABASE_SSL controls TLS to the database. Unset or false: no TLS (local development).
+//   true / 1 / require: TLS without checking the server certificate (hosted databases such as Render).
+//   verify: TLS and the certificate must be valid.
+const parseSslOption = (value = process.env.DATABASE_SSL) => {
+  const setting = String(value ?? '').trim().toLowerCase();
+  if (['true', '1', 'yes', 'on', 'require'].includes(setting)) return { rejectUnauthorized: false };
+  if (setting === 'verify') return { rejectUnauthorized: true };
+  return false;
+};
+
 // Create connection pool
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
+  ssl: parseSslOption(),
   max: 20,                    // Maximum number of clients in pool
   idleTimeoutMillis: 30000,   // Close idle clients after 30 seconds
   connectionTimeoutMillis: 2000, // Return error after 2 seconds if unable to connect
@@ -43,6 +54,7 @@ const testConnection = async () => {
 
 module.exports = {
   describeTarget,
+  parseSslOption,
   pool,
   query: (text, params) => pool.query(text, params),
   testConnection,

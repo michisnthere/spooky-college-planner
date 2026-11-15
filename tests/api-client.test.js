@@ -203,12 +203,12 @@ test('a refused connection (nothing listening) rejects with NETWORK_ERROR', asyn
   });
 });
 
-test('defaults: 5000 ms timeout and http://localhost:3000 base URL', async () => {
+test('defaults: 5000 ms timeout and a relative (same-origin) base URL', async () => {
   const { DEFAULT_TIMEOUT_MS, DEFAULT_BASE_URL, getBaseUrl } = await client();
   assert.equal(DEFAULT_TIMEOUT_MS, 5000);
-  assert.equal(DEFAULT_BASE_URL, 'http://localhost:3000');
+  assert.equal(DEFAULT_BASE_URL, '');
   delete globalThis.SPOOKY_API_BASE_URL;
-  assert.equal(getBaseUrl(), 'http://localhost:3000');
+  assert.equal(getBaseUrl(), '');
 });
 
 test('SPOOKY_API_BASE_URL overrides the base URL and trailing slashes are removed', async () => {

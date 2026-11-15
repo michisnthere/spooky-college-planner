@@ -1,0 +1,29 @@
+# Render Blueprint: one web service (API + frontend) and one PostgreSQL database.
+# See DEPLOY.md for the steps.
+services:
+  - type: web
+    name: spooky-college-planner
+    runtime: node
+    plan: free
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: spooky-planner-db
+          property: connectionString
+      # The internal connection string needs no TLS. Set to true if you use the external URL.
+      - key: DATABASE_SSL
+        value: "false"
+      # Secret: enter the value in the Render dashboard.
+      - key: COLLEGE_SCORECARD_API_KEY
+        sync: false
+
+databases:
+  - name: spooky-planner-db
+    plan: free
+    databaseName: spooky_planner
+    user: spooky
