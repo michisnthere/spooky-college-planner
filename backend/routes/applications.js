@@ -81,6 +81,13 @@ router.post('/', async (req, res) => {
       message: 'Application created successfully',
     });
   } catch (error) {
+    if (error.code === 'DUPLICATE_APPLICATION') {
+      return res.status(409).json({
+        success: false,
+        error: error.message,
+        code: 'DUPLICATE_APPLICATION',
+      });
+    }
     res.status(400).json({
       success: false,
       error: error.message,

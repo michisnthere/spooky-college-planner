@@ -68,19 +68,30 @@ const getApplication = async (collegeId) => {
   }
 };
 
+const duplicateError = () => {
+  const error = new Error('An application already exists for this college.');
+  error.status = 409;
+  error.code = 'DUPLICATE_APPLICATION';
+  return error;
+};
+
 // Create application for a college
 const createApplication = async (studentId, collegeId, deadlineDate) => {
   validateDeadline(deadlineDate);
   try {
+    // ON CONFLICT covers a second request for the same college. The unique index also decides a race.
     const result = await query(
       `INSERT INTO applications (student_id, college_id, status, deadline_date)
        VALUES ($1, $2, $3, $4)
+       ON CONFLICT (college_id) DO NOTHING
        RETURNING *`,
       [studentId, collegeId, 'pending', deadlineDate || null]
     );
 
+    if (result.rows.length === 0) throw duplicateError();
     return result.rows[0];
   } catch (error) {
+    if (error.code === 'DUPLICATE_APPLICATION' || error.code === '23505') throw duplicateError();
     throw new Error(`Failed to create application: ${error.message}`);
   }
 };

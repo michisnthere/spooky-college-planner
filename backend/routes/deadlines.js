@@ -28,6 +28,14 @@ router.get('/:collegeId', async (req, res) => {
       data: deadlineInfo,
     });
   } catch (error) {
+    if (!error.notFound) {
+      console.error(`[${new Date().toISOString()}] Deadline read failed:`, error.message);
+      return res.status(500).json({
+        success: false,
+        error: 'Internal server error',
+        code: 'INTERNAL_ERROR',
+      });
+    }
     res.status(404).json({
       success: false,
       error: error.message,

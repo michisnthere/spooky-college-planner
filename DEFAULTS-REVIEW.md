@@ -701,3 +701,36 @@ Decisions made while doing the seven follow-up changes, without asking the user.
 - **Default 2:** The live database already has `ON DELETE CASCADE`. The controller now deletes the application and the college in one transaction as well, so the result is the same without the cascade.
 - **Question 3:** What else changed?
 - **Default 3:** A second click on Delete while a request runs is ignored. A successful delete clears the deadline cache and the deadline tracker lane. The error message appears in a `role="alert"` paragraph that the script adds above the graveyard.
+
+## Task 32: Prevent Duplicate Applications
+
+Decisions made without asking the user. Each entry lists the task ID, the question, the default chosen, and why.
+
+### 1. Task 32 step 1: What if duplicates exist in the live database?
+- **Default:** Keep the newest row per college (by `created_at`, then `updated_at`, then `id`). Save the removed rows to a JSON file in the temp folder before deleting, and compare row counts before and after in one transaction.
+- **Result:** The live database had 1 application row and no college with more than one. Nothing was removed, so no backup file was written. The script is `backend/db/migrate-unique-application.js` (`--report` lists duplicates and changes nothing). It is safe to run again.
+- **Why:** Non-destructive by default, as the task asked.
+
+### 2. Task 32 step 2: Replace the existing non-unique index or add a second one?
+- **Default:** Add `uq_applications_college_id` (unique) and keep `idx_applications_college_id`.
+- **Why:** Dropping an index was not asked for. The extra index is small. It can be removed later.
+
+### 3. Task 32 step 3: Return the existing application, or an error, on a second POST?
+- **Default:** 409 with code `DUPLICATE_APPLICATION` in the standard envelope. The insert uses `ON CONFLICT (college_id) DO NOTHING`, and a raw unique violation (23505) from a race maps to the same 409. The first application is not changed.
+- **Why:** The task asked for 409. The frontend decides what to do with it.
+
+### 4. Task 32 step 4: What does the frontend do on a 409?
+- **Default:** `changeDeadline` and `saveNewCollege` catch `DUPLICATE_APPLICATION` and call `updateDeadline` on the existing application, then continue as if it had been created.
+- **Why:** The application exists, so setting its deadline gives the result the user wanted.
+
+### 5. Task 32 step 4: Should a database error on a deadline read still return 404?
+- **Default:** No. `GET /api/deadlines/:collegeId` returns 404 only when no application exists or the id is not a UUID (pg code 22P02, kept because an existing test expects 404). Any other error returns 500 `INTERNAL_ERROR` with a generic message, and the detail is logged on the server only.
+- **Why:** The frontend treats a 404 as "no application" and creates one. A 500 is rethrown, so no second row is created. The change is about 10 lines. `GET /api/applications/:collegeId` still returns 404 for every error. It is not used by the frontend, so it was left alone.
+
+### 6. Task 32 step 5 and testing: How were the tests built?
+- **Default:** The todo test in `tests/error-handling-backend.test.js` now asserts 409, the code, and that the first deadline is unchanged. New `tests/duplicate-application.test.js` covers the sequential 409, six concurrent POSTs (one 201, five 409), the raw 23505 from the index, a different college, an application without a deadline, a 500 from a server started with an unreachable database, and two frontend cases (409 then PATCH, and a 500 read sends no POST).
+- **Why:** The database error case uses a real second server with a bad `DATABASE_URL` instead of a mock. The frontend cases use a local stand-in for `fetch`.
+
+### Files changed or added for Task 32
+- `backend/db/schema.sql`, `backend/db/migrate-unique-application.js` (new), `backend/controllers/applicationController.js`, `backend/routes/applications.js`, `backend/controllers/deadlineController.js`, `backend/routes/deadlines.js`, `frontend/js/app.js`, `tests/error-handling-backend.test.js`, `tests/duplicate-application.test.js` (new), `DEFAULTS-REVIEW.md`.
+- `tasks.md` checkboxes were not changed.

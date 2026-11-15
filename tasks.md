@@ -2,7 +2,7 @@
 
 ## Overview
 
-Tasks run in order. Each task depends on the one before it, so the tracker runs one task at a time. Tasks 1 through 8 are complete. Work resumes at Task 9.
+Tasks run in order. Each task depends on the one before it, so the tracker runs one task at a time. Tasks 1 through 31 are complete. Work resumes at Task 32.
 
 Each task lists its steps and verification checks as plain bullets. Only the top-level task line is a checkbox, so the tracker counts one item per task.
 
@@ -34,7 +34,15 @@ Each task lists its steps and verification checks as plain bullets. Only the top
     { "wave": 21, "tasks": ["21"] },
     { "wave": 22, "tasks": ["22"] },
     { "wave": 23, "tasks": ["23"] },
-    { "wave": 24, "tasks": ["24"] }
+    { "wave": 24, "tasks": ["24"] },
+    { "wave": 25, "tasks": ["25"] },
+    { "wave": 26, "tasks": ["26"] },
+    { "wave": 27, "tasks": ["27"] },
+    { "wave": 28, "tasks": ["28"] },
+    { "wave": 29, "tasks": ["29"] },
+    { "wave": 30, "tasks": ["30"] },
+    { "wave": 31, "tasks": ["31"] },
+    { "wave": 32, "tasks": ["32"] }
   ]
 }
 ```
@@ -328,6 +336,83 @@ Each task lists its steps and verification checks as plain bullets. Only the top
     6. Test on multiple browsers and mobile.
   - Verification:
     - Lighthouse score above 80, no layout shifts, responsive at 375px width, and works in Chrome, Firefox, and Safari.
+
+## Follow-up Fixes
+
+- [x] 25. Local Date Parsing
+  - Description: Parse YYYY-MM-DD deadline strings as local midnight so a deadline of today is not rejected in time zones behind UTC.
+  - Steps:
+    1. Create backend/utils/dates.js with a local-date parser.
+    2. Use it in deadlineController.updateDeadline and the days-remaining calculation.
+    3. Check applicationController and other controllers for the same UTC parsing.
+  - Verification:
+    - tests/e2e-flow.test.js "a deadline of today gives 0 days" passes.
+
+- [x] 26. Reject Past Dates
+  - Description: Reject past deadlines everywhere. A deadline of today stays allowed.
+  - Steps:
+    1. Reject past or malformed dates in POST /api/applications and PATCH deadline with a 400 in the standard error envelope.
+    2. Keep the add-college form and the detail modal rejecting past dates.
+  - Verification:
+    - Past dates return 400 from both endpoints. Today is accepted.
+
+- [x] 27. Env Password Alignment & Log Redaction
+  - Description: Use the root .env database password in every env file and stop logging the password.
+  - Steps:
+    1. Copy the password from the root .env into backend/config/.env without printing it.
+    2. Keep a placeholder password in backend/config/.env.example.
+    3. Change backend/db/connection.js and backend/db/testConnection.js to log only the host and database name.
+  - Verification:
+    - Both real env files connect. No log line contains the password.
+
+- [x] 28. Missing Lookup Data Dialog
+  - Description: When a looked-up college lacks attributes, show a dialog that lists every missing attribute with an input for each.
+  - Steps:
+    1. Fix lookupController so a missing acceptance rate returns null, not "NaN".
+    2. Add a parchment dialog that lists all missing attributes (location, state, acceptance rate) with one input each.
+    3. Validate the entries (rate 0 to 100, valid state, location length) and copy them into the add-college form on Continue.
+    4. Add a Skip button. Show no dialog when nothing is missing.
+  - Verification:
+    - A college with no acceptance rate opens the dialog. The entered values appear in the form.
+
+- [x] 29. Full State Names
+  - Description: Store and show full state names instead of two-letter codes.
+  - Steps:
+    1. Create backend/utils/states.js mapping the 50 states, DC, and the territories to full names.
+    2. Widen colleges.state to VARCHAR(50) in schema.sql and migrate the live database, converting existing rows.
+    3. Accept a code or a full name in the backend, store the full name, and return 400 for anything else.
+    4. Show full names in the form and detail modal.
+  - Verification:
+    - A college with state "Massachusetts" saves, and an existing two-letter row shows its full name.
+
+- [x] 30. Zombie Movement With Transform
+  - Description: Move the lane zombie with transform instead of left.
+  - Steps:
+    1. Add a rail wrapper in deadline-tracker.js and move it with translateX. Keep the position formula.
+    2. Update the tests that read style.left.
+    3. Keep the reduced-motion behavior.
+  - Verification:
+    - The zombie has no inline left. Its position matches the days remaining.
+
+- [x] 31. Persistent College Delete
+  - Description: Make a deleted college stay deleted after a refresh.
+  - Steps:
+    1. Call DELETE /api/colleges/:collegeId from the delete button and remove the card only after the server confirms.
+    2. On failure keep the card and show an error.
+    3. Delete the college's application in the same transaction and clear its deadline cache and lane.
+  - Verification:
+    - A deleted college does not return after a reload and has no lane on deadlines.html.
+
+- [x] 32. Prevent Duplicate Applications
+  - Description: Stop the API from creating a second application row for the same college.
+  - Steps:
+    1. Check the live database for existing duplicate applications per college. Report them, and keep the newest row for each college.
+    2. Add a unique index on applications.college_id in schema.sql and in the live database.
+    3. Return 409 with code DUPLICATE_APPLICATION from POST /api/applications when one already exists, in the standard error envelope.
+    4. Make the frontend treat a 409 as "application exists" and update the existing one. This also covers the case where a database error is read as a 404.
+    5. Convert the todo test in tests/error-handling-backend.test.js into a passing test.
+  - Verification:
+    - A second POST for the same college returns 409 and the table holds one row. The full test suite passes with the backend running and E2E_LIVE=1.
 
 ## Notes
 

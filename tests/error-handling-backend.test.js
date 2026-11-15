@@ -204,14 +204,16 @@ test('adding the same college again returns 409 DUPLICATE_COLLEGE with a message
   assert.equal(again.body.error, 'This college is already in your graveyard.');
 });
 
-test('a second application for the same college is rejected',
-  { todo: 'Known gap: POST /api/applications creates a second row for one college. Needs a decision (409 or replace).' },
-  async () => {
-    const college = await addCollege('Second App U');
-    await raw('POST', '/api/applications', { studentId, collegeId: college.id, deadlineDate: localDate(20) });
-    const second = await raw('POST', '/api/applications', { studentId, collegeId: college.id, deadlineDate: localDate(40) });
-    assertEnvelope(second, 409);
-  });
+test('a second application for the same college is rejected with 409 DUPLICATE_APPLICATION', async () => {
+  const college = await addCollege('Second App U');
+  const first = await raw('POST', '/api/applications', { studentId, collegeId: college.id, deadlineDate: localDate(20) });
+  assert.equal(first.status, 201, first.text);
+  const second = await raw('POST', '/api/applications', { studentId, collegeId: college.id, deadlineDate: localDate(40) });
+  assertEnvelope(second, 409);
+  assert.equal(second.body.code, 'DUPLICATE_APPLICATION');
+  const kept = await raw('GET', `/api/deadlines/${college.id}`);
+  assert.equal(kept.body.data.deadlineDate.slice(0, 10), localDate(20), 'the first application is unchanged');
+});
 
 // 5. Malformed input and unknown routes
 test('a malformed JSON body returns a JSON 400 error, not an HTML stack trace', async () => {

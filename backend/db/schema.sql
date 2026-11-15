@@ -38,4 +38,6 @@ CREATE TABLE IF NOT EXISTS applications (
 CREATE INDEX IF NOT EXISTS idx_colleges_student_id ON colleges(student_id);
 CREATE INDEX IF NOT EXISTS idx_applications_student_id ON applications(student_id);
 CREATE INDEX IF NOT EXISTS idx_applications_college_id ON applications(college_id);
+-- One application per college. Existing databases get this from backend/db/migrate-unique-application.js.
+CREATE UNIQUE INDEX IF NOT EXISTS uq_applications_college_id ON applications(college_id);
 CREATE INDEX IF NOT EXISTS idx_applications_deadline ON applications(deadline_date);

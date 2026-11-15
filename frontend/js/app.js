@@ -80,7 +80,12 @@ export async function saveNewCollege(data) {
 
   if (!data.deadlineDate) return null;
   try {
-    await createApplication({ studentId, collegeId: college.id, deadlineDate: data.deadlineDate });
+    try {
+      await createApplication({ studentId, collegeId: college.id, deadlineDate: data.deadlineDate });
+    } catch (error) {
+      if (!(error instanceof ApiError && error.code === 'DUPLICATE_APPLICATION')) throw error;
+      await updateDeadline(college.id, data.deadlineDate);
+    }
     // Fill the deadline cache, so the detail view shows the new deadline without a page reload.
     deadlineByCollege.set(String(college.id), {
       hasApplication: true,
@@ -175,7 +180,17 @@ export async function changeDeadline(college, newDeadline) {
     await updateDeadline(college.id, value);
   } else {
     const studentId = await getStudentId();
-    await createApplication({ studentId, collegeId: college.id, deadlineDate: value });
+    try {
+      await createApplication({ studentId, collegeId: college.id, deadlineDate: value });
+    } catch (error) {
+      // 409: the application already exists (a stale cache, or a request that timed out but saved).
+      // Update the existing one instead of failing.
+      if (error instanceof ApiError && error.code === 'DUPLICATE_APPLICATION') {
+        await updateDeadline(college.id, value);
+      } else {
+        throw error;
+      }
+    }
   }
 
   let fresh;

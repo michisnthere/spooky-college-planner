@@ -61,7 +61,11 @@ const getDeadlineInfo = async (collegeId) => {
       status: app.status,
     };
   } catch (error) {
-    throw new Error(`Failed to fetch deadline info: ${error.message}`);
+    const wrapped = new Error(`Failed to fetch deadline info: ${error.message}`);
+    // Only "no application" and "id is not a UUID" are a missing resource. Any other failure
+    // (connection lost, query error) is a server error, so the frontend does not treat it as "no application".
+    wrapped.notFound = error.message === 'Application not found for this college' || error.code === '22P02';
+    throw wrapped;
   }
 };
 
