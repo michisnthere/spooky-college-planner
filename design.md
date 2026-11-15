@@ -86,6 +86,18 @@ Each tombstone is a single element with a shape modifier class, for example `.to
 - Colleges in the top 10 category use one shape, colleges in the top 50 category use a different shape, and all other colleges use the default shape.
 - The ranking source is not yet defined. The College Scorecard data does not provide a rank, so the source must be chosen before this feature is built.
 
+### 3.4 Visual Polish Design
+
+These additions implement requirements section 3.5. All of them are CSS and small vanilla JavaScript. No new runtime dependencies.
+
+- **Fonts**: Fraunces (headers, large text) and Plus Jakarta Sans (body, small text). Defined as `--font-display` and `--font-body` in style.css. The fonts are self-hosted as woff2 files under `frontend/fonts/` and declared with `@font-face` and `font-display: swap`, so the existing content security policy (own scripts and styles only) needs no change. Fallbacks: `Georgia, serif` and `system-ui, sans-serif`.
+- **Embossed text**: a shared class (for example `.embossed`) built from layered `text-shadow`: a light 1px highlight up and to the left, a dark 1px shadow down and to the right, and the existing white outline from `--text-outline`. Applied to the page title, headings and tombstone names.
+- **Parallax**: a fixed, full-viewport `.scenery` container behind the content with `pointer-events: none` and `aria-hidden="true"`. Layers, far to near: moon (existing moon element moved into the scenery), clouds, hills, trees and graveyard silhouette. Layers are inline or CSS-background SVG. A small module `frontend/js/ui/parallax.js` listens to scroll (passive listener, batched with `requestAnimationFrame`) and sets each layer's `translate3d` from its speed factor (for example 0.1, 0.2, 0.4, 0.6 of the scroll distance). The graveyard scrolls horizontally, so the module reads horizontal scroll of the graveyard container and vertical page scroll, whichever applies on the page. Under reduced motion the module does nothing.
+- **Wobbly stones**: on `.tombstone:hover` and `:focus-visible`, a `stoneRumble` keyframe in animations.css rotates the card between about -1.5 and 1.5 degrees (never beyond 2) with a few small `translateY` jolts, 0.4s, played once per hover. On touch screens rontend/js/ui/wobble.js adds .tombstone--wobble on a tap (not a mouse click), which plays the same motion under the name stoneRumbleTap so it restarts on every tap. The rotation uses `transform-origin: bottom center` so the base stays on the ground. Transform only, so layout and neighbors do not move.
+- **Gate dividers**: rontend/assets/gate-divider.svg is one repeating unit (thin vertical bars, spearhead tips, a scrollwork medallion) in #2E323E, with bars evenly spaced across the tile edge. A global hr rule in style.css uses it as a epeat-x background, so any <hr> added later is styled with no extra markup. The pages have no <hr> today, so none are placed.
+- **Ground fog**: a `.fog` layer positioned at the bottom of each tombstone card, `pointer-events: none`, with a blurred radial or linear gradient (`filter: blur`, set once and not animated). A `fogDrift` keyframe moves it with `translateX` over 20 to 40 seconds, looping back and forth, with a low opacity so card text stays readable. A shared .scenery__fog strip also drifts behind the graveyard, in front of the hills and trees.
+- **Constraints**: the existing rule that keyframes animate only transform and opacity still holds. The single 768px breakpoint still holds, and the scenery and fog scale by viewport units. All new animation is disabled in the `prefers-reduced-motion` block.
+
 ## 4. Backend Architecture
 
 ### 4.1 API Endpoints

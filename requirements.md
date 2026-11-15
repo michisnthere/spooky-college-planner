@@ -33,6 +33,22 @@ The system shall render each tombstone with detailed styling, including stone ed
 The system shall render tombstones in a variety of shapes, including at least rounded-top, pointed-top, cross, slab, and arched shapes.
 In a future release, the system shall assign each tombstone a shape based on the college's ranking category, so that colleges in the top 10 and colleges in the top 50 display different shapes. The ranking data source is not yet defined and is out of scope for the current release.
 
+### 3.5 Visual Polish: Typography, Depth & Atmosphere
+
+**Fonts.** The system shall set headers and larger text in Fraunces, and body and smaller paragraph text in Plus Jakarta Sans. Each font shall have a serif or sans-serif fallback stack so text stays readable while the font loads.
+
+**Embossed typography.** The system shall render headers and other large display text with an embossed look, as if pressed or raised from the surface, using layered highlights and shadows. The embossing shall keep the text legible against its background and shall keep the white outline required in section 3.4 for text on dark backgrounds.
+
+**Parallax scenery.** The system shall render the night scenery in several layers that move at different speeds as the user scrolls, so that distant layers move slower than near layers. From farthest to nearest the layers are: the glowing moon, faint clouds, hills, and twisted trees with graveyard silhouettes. The layers shall sit behind the tombstones and shall not block clicks or reduce text legibility. Both the page scroll and the graveyard's sideways scroll move the layers, on every page. Under reduced motion the layers shall stay fixed in place.
+
+**Wobbly stones.** When the pointer hovers over a tombstone card, the system shall tilt that card by 1 to 2 degrees with a short, subtle "earth rumble" motion, as if something were knocking from underneath. The card shall settle back when the pointer leaves. On touch screens, tapping a card shall play the same motion once. The motion shall not change the card's click target or move neighboring cards.
+
+**Victorian gate dividers.** The system shall style every horizontal rule (<hr>) as a custom SVG border in place of a plain line. The border shall be inspired by Victorian cemetery gates, with thin vertical bars, spearhead tips and delicate scrollwork, drawn in dark charcoal (#2E323E). The border shall scale to the width of its container and repeat sideways. The current pages contain no <hr>, so no dividers are added yet. The style applies to any <hr> added in the future.
+
+**Drifting ground fog.** The system shall place a semi-transparent, blurred gradient layer over the bottom of the tombstone cards that drifts slowly and horizontally, so the stones look like they rise out of mist. Each tombstone card has its own fog layer, and one shared fog strip also drifts in the background behind the graveyard. The fog shall not intercept clicks and shall not hide the text on a card.
+
+All new motion (parallax, wobble, fog) shall use only transform and opacity, and shall be disabled when the operating system requests reduced motion.
+
 ## 4. Non-Functional Requirements
 The frontend shall be built using standard HTML, CSS, and vanilla JavaScript without heavy UI frameworks.
 The frontend shall use a single responsive breakpoint at 768px. This value may be adjusted after testing. The frontend shall disable all animations when the operating system requests reduced motion.

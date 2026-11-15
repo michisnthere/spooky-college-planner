@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 380" width="1400" height="380">
+  <!-- Twisted bare trees, an iron fence and grave markers in silhouette. Nothing touches the
+       left or right edge, so the tile repeats without a seam. -->
+  <g fill="none" stroke="#05080f" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Tree one, leaning left -->
+    <path stroke-width="24" d="M270,380 C255,335 295,305 262,255 C238,218 278,192 252,150"/>
+    <path stroke-width="10" d="M262,255 C225,240 200,205 158,196"/>
+    <path stroke-width="8" d="M252,150 C222,130 216,102 184,84"/>
+    <path stroke-width="8" d="M252,150 C284,126 304,132 336,100"/>
+    <path stroke-width="7" d="M272,222 C312,206 332,176 376,172"/>
+    <path stroke-width="4" d="M158,196 C140,196 128,180 112,182"/>
+    <path stroke-width="4" d="M184,84 C176,66 182,52 170,40"/>
+    <path stroke-width="4" d="M336,100 C348,84 342,70 356,58"/>
+    <path stroke-width="3" d="M376,172 C392,166 396,150 412,148"/>
+    <!-- Tree two, tall and bent to the right -->
+    <path stroke-width="30" d="M930,380 C950,330 900,300 934,240 C960,194 920,160 950,100"/>
+    <path stroke-width="12" d="M934,240 C890,226 862,184 820,176"/>
+    <path stroke-width="11" d="M950,100 C920,84 912,52 880,40"/>
+    <path stroke-width="10" d="M950,100 C984,84 1000,56 1040,50"/>
+    <path stroke-width="9" d="M946,170 C990,158 1016,126 1070,124"/>
+    <path stroke-width="5" d="M820,176 C802,180 790,166 772,170"/>
+    <path stroke-width="5" d="M1040,50 C1056,40 1060,24 1080,20"/>
+    <path stroke-width="4" d="M1070,124 C1090,122 1100,106 1120,108"/>
+    <path stroke-width="4" d="M880,40 C872,26 878,14 866,6"/>
+    <!-- Small dead tree in the middle -->
+    <path stroke-width="14" d="M640,380 C634,350 656,336 642,306"/>
+    <path stroke-width="6" d="M642,306 C620,296 612,276 590,270"/>
+    <path stroke-width="6" d="M642,306 C664,294 672,276 694,270"/>
+    <path stroke-width="3" d="M590,270 C580,272 574,262 564,262"/>
+  </g>
+  <g fill="#05080f">
+    <!-- Cross markers -->
+    <rect x="474" y="296" width="8" height="84"/>
+    <rect x="456" y="314" width="44" height="8"/>
+    <rect x="1196" y="310" width="8" height="70"/>
+    <rect x="1180" y="326" width="40" height="8"/>
+    <!-- Rounded headstones -->
+    <path d="M520,380 L520,332 C520,310 560,310 560,332 L560,380 Z"/>
+    <path d="M1250,380 L1250,340 C1250,320 1282,320 1282,340 L1282,380 Z"/>
+    <!-- Iron fence: bars with spear tips between two rails -->
+    <rect x="1000" y="338" width="150" height="4"/>
+    <rect x="1000" y="364" width="150" height="4"/>
+    <g id="bars">
+      <path d="M1004,380 V320 L1008,310 L1012,320 V380 Z"/>
+      <path d="M1022,380 V320 L1026,310 L1030,320 V380 Z"/>
+      <path d="M1040,380 V320 L1044,310 L1048,320 V380 Z"/>
+      <path d="M1058,380 V320 L1062,310 L1066,320 V380 Z"/>
+      <path d="M1076,380 V320 L1080,310 L1084,320 V380 Z"/>
+      <path d="M1094,380 V320 L1098,310 L1102,320 V380 Z"/>
+      <path d="M1112,380 V320 L1116,310 L1120,320 V380 Z"/>
+      <path d="M1130,380 V320 L1134,310 L1138,320 V380 Z"/>
+    </g>
+  </g>
+</svg>

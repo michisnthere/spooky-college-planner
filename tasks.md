@@ -1,4 +1,4 @@
-﻿# Implementation Plan: Spooky College Planner
+# Implementation Plan: Spooky College Planner
 
 ## Overview
 
@@ -45,7 +45,10 @@ Each task lists its steps and verification checks as plain bullets. Only the top
     { "wave": 32, "tasks": ["32"] },
     { "wave": 33, "tasks": ["33"] },
     { "wave": 34, "tasks": ["34"] },
-    { "wave": 35, "tasks": ["35"] }
+    { "wave": 35, "tasks": ["35"] },
+    { "wave": 36, "tasks": ["36"] },
+    { "wave": 37, "tasks": ["37", "38", "39", "40"] },
+    { "wave": 38, "tasks": ["41"] }
   ]
 }
 ```
@@ -453,6 +456,64 @@ Each task lists its steps and verification checks as plain bullets. Only the top
   - Verification:
     - init.js creates the full schema on an empty database. The server starts with NODE_ENV=production against a database with SSL settings configured. DEPLOY.md steps are complete and match render.yaml.
 
+## UI Polish
+
+Refer to requirements.md section 3.5 and design.md section 3.4. Every task keeps the single 768px breakpoint, animates only transform and opacity, and disables new motion under prefers-reduced-motion.
+
+- [x] 36. Fonts & Embossed Typography
+  - Description: Switch to Fraunces for headers and larger text and Plus Jakarta Sans for body and smaller text, and give display text an embossed look.
+  - Steps:
+    1. Add woff2 files for both fonts under frontend/fonts/ (self-hosted, so the content security policy stays unchanged) and declare them with @font-face and font-display: swap.
+    2. Replace --font-display with Fraunces plus a serif fallback, add --font-body with Plus Jakarta Sans plus a sans-serif fallback, and set body text to --font-body.
+    3. Add --text-emboss and --text-emboss-parchment (layered text-shadow, keeping the white outline on dark backgrounds) and apply them to the page title, headings, tombstone names and dialog titles.
+    4. Update tests that assume the Georgia font stack.
+  - Verification:
+    - Headings render in Fraunces and paragraphs in Plus Jakarta Sans on both pages. Embossed text stays legible on the header, tombstones and dialogs. No CSP errors in the browser console.
+
+- [x] 37. Parallax Night Scenery
+  - Description: Add a multi-layer parallax background with a glowing moon, faint clouds, hills, and twisted trees with graveyard silhouettes.
+  - Steps:
+    1. Add a fixed .scenery container on both pages behind the content (pointer-events: none, aria-hidden) with layers for moon, clouds, hills and trees/graveyard, each drawn as SVG.
+    2. Move the existing moon into the moon layer, keeping its craters and glow.
+    3. Create frontend/js/ui/parallax.js that moves each layer by its own speed factor on scroll, using a passive listener and requestAnimationFrame. Do nothing under reduced motion.
+    4. Check that the layers do not block clicks, hide tombstones, or lower text contrast.
+  - Verification:
+    - Scrolling moves distant layers slower than near layers. Tombstones, the form and dialogs stay clickable and legible. With reduced motion on, the layers stay still.
+
+- [x] 38. Wobbly Stones
+  - Description: Tilt a tombstone card 1 to 2 degrees with a subtle earth-rumble motion on hover.
+  - Steps:
+    1. Add a stoneRumble keyframe to animations.css (rotation within 2 degrees, small translateY jolts, about 0.4s, transform-origin at the bottom center).
+    2. Play it on .tombstone:hover and :focus-visible, and on a touch tap through wobble.js, and make the card settle back afterwards.
+    3. Make sure it does not conflict with the cardReveal and delete animations or move neighboring cards.
+  - Verification:
+    - Hovering a card tilts it by no more than 2 degrees and then settles. Clicking and deleting still work. Nothing animates under reduced motion.
+
+- [x] 39. Victorian Gate Dividers
+  - Description: Style every horizontal rule as a custom SVG border inspired by Victorian cemetery gates. The pages have no <hr> today, so this is saved for future <hr> elements and none are added.
+  - Steps:
+    1. Design the SVG (thin vertical bars, spearhead tips, delicate scrollwork) in #2E323E, as a unit that repeats sideways without a seam.
+    2. Add a global hr rule that uses it as a repeat-x background with no default border.
+  - Verification:
+    - The SVG uses only #2E323E and tiles evenly. Any <hr> picks up the style with no extra markup.
+
+- [x] 40. Drifting Ground Fog
+  - Description: Add a blurred, semi-transparent gradient over the base of the tombstone cards that slowly drifts horizontally.
+  - Steps:
+    1. Add a fog layer at the bottom of each tombstone card (pointer-events: none) with a blurred gradient at low opacity, plus one shared fog strip in the scenery behind the graveyard.
+    2. Add a fogDrift keyframe (translateX only, 20 to 40 seconds, looping) to animations.css.
+    3. Confirm card text and buttons stay readable and clickable, and that many cards do not slow scrolling. Use one shared fog strip if they do.
+  - Verification:
+    - Stones look like they rise from mist, the fog drifts slowly, and clicks pass through it. The fog is static under reduced motion.
+
+- [x] 41. UI Polish Tests & Review
+  - Description: Cover the new visuals with automated checks and a visual pass.
+  - Steps:
+    1. Add at least 5 tests: fonts declared and applied, embossed class present, scenery layers exist with aria-hidden and pointer-events none, rumble keyframe stays within 2 degrees, dividers use #2E323E, and reduced motion disables the new animations.
+    2. Confirm the existing test that keyframes animate only transform and opacity still passes.
+    3. Check both pages in headless Chrome at 375px and desktop width for console errors and CSP errors.
+  - Verification:
+    - The full test suite passes and the pages show no console errors.
 ## Notes
 
 - Estimated timeline: 15 to 21 hours of development.

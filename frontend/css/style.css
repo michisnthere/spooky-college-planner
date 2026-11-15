@@ -4,6 +4,27 @@
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
+   0. Fonts (self-hosted, so the content security policy stays on 'self')
+   Fraunces for headers and larger text. Plus Jakarta Sans for body and smaller text.
+   Both are variable fonts, so one file covers every weight.
+   -------------------------------------------------------------------------- */
+@font-face {
+  font-family: "Fraunces";
+  src: url("../fonts/fraunces-latin-wght-normal.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  src: url("../fonts/plus-jakarta-sans-latin-wght-normal.woff2") format("woff2");
+  font-weight: 200 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* --------------------------------------------------------------------------
    1. Variables
    -------------------------------------------------------------------------- */
 :root {
@@ -54,9 +75,22 @@
     1px 1px 0 #ffffff, -1px -1px 0 #ffffff,
     1px -1px 0 #ffffff, -1px 1px 0 #ffffff;
 
+  /* Embossed type. On dark backgrounds the white outline stays and a dark offset shadow lifts the
+     letters off the surface. On parchment a light edge above and a dark edge below press them in. */
+  --text-emboss: var(--text-outline),
+    1px 2px 1px rgba(0, 0, 0, 0.6),
+    2px 4px 5px rgba(0, 0, 0, 0.35);
+  --text-emboss-parchment: 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 -1px 0 rgba(46, 17, 64, 0.4),
+    1px 2px 2px rgba(46, 17, 64, 0.25);
+
   /* Shadows and fonts */
   --shadow-drop: 0 12px 16px rgba(0, 0, 0, 0.6);
-  --font-display: Georgia, "Times New Roman", serif;
+  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+  --font-body: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  /* Night scenery (parallax layers). The layers reach this far below the screen so they can move up. */
+  --scenery-overscan: 8rem;
 }
 
 /* --------------------------------------------------------------------------
@@ -78,7 +112,7 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   color: var(--color-text-dark);
   background: linear-gradient(to bottom, var(--color-sky-top), var(--color-sky-mid) 60%, var(--color-sky-bottom));
   background-attachment: fixed;
@@ -88,6 +122,28 @@ body {
 button,
 input {
   font: inherit;
+}
+
+/* Headers and larger text use the display font. */
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+}
+
+/* Decorative section divider, ready for any <hr> added later. Victorian cemetery gate in
+   charcoal. A faint light edge keeps it visible on the dark sky. */
+hr {
+  display: block;
+  width: min(94%, 60rem);
+  height: 3rem;
+  margin: 1.5rem auto;
+  padding: 0;
+  border: 0;
+  background: url("../assets/gate-divider.svg") center / auto 100% repeat-x;
+  filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.45));
+  overflow: hidden;
 }
 
 [hidden] {
@@ -137,12 +193,13 @@ input {
   font-size: 2.25rem;
   letter-spacing: 0.04em;
   color: var(--color-accent);
-  text-shadow: var(--text-outline);
+  text-shadow: var(--text-emboss);
 }
 
 .site-tagline {
   margin: 0.35rem 0 0;
   font-style: italic;
+  letter-spacing: 0.02em;
   color: var(--color-header-text);
 }
 
@@ -158,12 +215,121 @@ input {
    4. Layout
    -------------------------------------------------------------------------- */
 .main-content {
+  position: relative;
+  z-index: 1;
   flex: 1 0 auto;
   display: flex;
   flex-direction: column;
   min-width: 0;
 }
 
+.main-content--graveyard {
+  /* The graveyard sits at the bottom of the screen, so the hills and trees stand right behind it. */
+  justify-content: flex-end;
+}
+
+/* --------------------------------------------------------------------------
+   4b. Night scenery: fixed layers behind the page (parallax.js moves them)
+   From far to near: moon, clouds, hills, trees and grave markers, then a strip of mist.
+   Decoration only: hidden from screen readers, and clicks pass through.
+   -------------------------------------------------------------------------- */
+.scenery {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Layers reach below the screen by --scenery-overscan, so they can move up without a gap. */
+.scenery__layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  bottom: calc(-1 * var(--scenery-overscan));
+  will-change: transform;
+}
+
+/* The tiled layers are one tile wider than the screen, so parallax.js can wrap them sideways. */
+.scenery__layer--clouds {
+  top: 18%;
+  bottom: auto;
+  width: calc(100% + 1200px);
+  height: 260px;
+  background: url("../assets/clouds.svg") left top / 1200px 260px repeat-x;
+}
+
+.scenery__layer--hills {
+  top: auto;
+  width: calc(100% + 1600px);
+  height: 480px;
+  background: url("../assets/hills.svg") left bottom / 1600px 480px repeat-x;
+}
+
+.scenery__layer--trees {
+  top: auto;
+  bottom: calc(var(--ground-height) - 1.5rem);
+  width: calc(100% + 1400px);
+  height: 380px;
+  background: url("../assets/trees.svg") left bottom / 1400px 380px repeat-x;
+}
+
+/* Moon: a CSS disc in the sky, top right. ::before draws the lit surface and glow.
+   ::after draws the craters. */
+.scenery__moon {
+  position: absolute;
+  top: 10rem;
+  right: 2.5rem;
+  width: 4.5rem;
+  height: 4.5rem;
+}
+
+.scenery__moon::before,
+.scenery__moon::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+}
+
+.scenery__moon::before {
+  background:
+    radial-gradient(circle at 30% 28%, rgba(255, 255, 255, 0.7) 0 10%, transparent 26%),
+    radial-gradient(circle at 60% 65%, rgba(190, 165, 110, 0.25) 0 30%, transparent 55%),
+    radial-gradient(circle at 35% 35%, #fffbea 0%, #f4e6bd 55%, #d8c188 100%);
+  box-shadow:
+    inset -6px -8px 14px rgba(130, 100, 45, 0.35),
+    0 0 14px 4px rgba(255, 240, 200, 0.4),
+    0 0 40px 14px rgba(255, 236, 190, 0.26),
+    0 0 90px 30px rgba(170, 200, 255, 0.14);
+}
+
+/* Craters: each is a radial gradient, darker in the middle with a lighter rim, so it reads as a pit. */
+.scenery__moon::after {
+  background:
+    radial-gradient(circle 0.6rem at 3.1rem 3.0rem, rgba(110, 85, 45, 0.45) 0 0.35rem, rgba(255, 250, 235, 0.55) 0.5rem, transparent 0.6rem),
+    radial-gradient(circle 0.45rem at 1.35rem 1.45rem, rgba(110, 85, 45, 0.45) 0 0.25rem, rgba(255, 250, 235, 0.55) 0.36rem, transparent 0.45rem),
+    radial-gradient(circle 0.4rem at 2.9rem 1.05rem, rgba(110, 85, 45, 0.42) 0 0.2rem, rgba(255, 250, 235, 0.5) 0.31rem, transparent 0.4rem),
+    radial-gradient(circle 0.3rem at 0.95rem 3.2rem, rgba(110, 85, 45, 0.42) 0 0.15rem, rgba(255, 250, 235, 0.5) 0.23rem, transparent 0.3rem),
+    radial-gradient(circle 0.35rem at 2.2rem 3.7rem, rgba(110, 85, 45, 0.4) 0 0.17rem, rgba(255, 250, 235, 0.5) 0.27rem, transparent 0.35rem);
+}
+
+/* Shared mist along the base of the graveyard, behind the stones. It drifts sideways (animations.css). */
+.scenery__fog {
+  position: absolute;
+  left: -20%;
+  right: -20%;
+  bottom: calc(var(--ground-height) - 1.5rem);
+  height: 8rem;
+  background:
+    radial-gradient(ellipse 22% 55% at 15% 70%, rgba(205, 220, 240, 0.34), transparent 75%),
+    radial-gradient(ellipse 26% 60% at 42% 80%, rgba(205, 220, 240, 0.3), transparent 75%),
+    radial-gradient(ellipse 24% 50% at 70% 65%, rgba(205, 220, 240, 0.32), transparent 75%),
+    radial-gradient(ellipse 20% 55% at 92% 78%, rgba(205, 220, 240, 0.28), transparent 75%),
+    linear-gradient(to top, rgba(190, 208, 232, 0.22), transparent 80%);
+  filter: blur(14px);
+}
 /* --------------------------------------------------------------------------
    5. Graveyard scene
    Horizontal flex row that always scrolls sideways. The sky and ground are
@@ -191,52 +357,6 @@ input {
   background-size: 100% var(--ground-height);
   background-position: left bottom;
   background-repeat: no-repeat;
-}
-
-/* Moon: a CSS disc in the sky, top right of the graveyard.
-   ::before draws the lit surface and glow. ::after draws the craters. */
-.graveyard::before,
-#graveyard::before {
-  content: "";
-  position: absolute;
-  top: 1.5rem;
-  right: 2rem;
-  width: 4.5rem;
-  height: 4.5rem;
-  border-radius: 50%;
-  background:
-    radial-gradient(circle at 30% 28%, rgba(255, 255, 255, 0.7) 0 10%, transparent 26%),
-    radial-gradient(circle at 60% 65%, rgba(190, 165, 110, 0.25) 0 30%, transparent 55%),
-    radial-gradient(circle at 35% 35%, #fffbea 0%, #f4e6bd 55%, #d8c188 100%);
-  box-shadow:
-    inset -6px -8px 14px rgba(130, 100, 45, 0.35),
-    0 0 14px 4px rgba(255, 240, 200, 0.35),
-    0 0 40px 14px rgba(255, 236, 190, 0.22),
-    0 0 90px 30px rgba(170, 200, 255, 0.12);
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* Craters: each crater is a radial gradient that is darker in the middle and
-   has a lighter rim, so it reads as a pit. A pseudo-element cannot hold several
-   separate inset-shadowed circles, so the craters are drawn inside one layer. */
-.graveyard::after,
-#graveyard::after {
-  content: "";
-  position: absolute;
-  top: 1.5rem;
-  right: 2rem;
-  width: 4.5rem;
-  height: 4.5rem;
-  border-radius: 50%;
-  background:
-    radial-gradient(circle 0.6rem at 3.1rem 3.0rem, rgba(110, 85, 45, 0.45) 0 0.35rem, rgba(255, 250, 235, 0.55) 0.5rem, transparent 0.6rem),
-    radial-gradient(circle 0.45rem at 1.35rem 1.45rem, rgba(110, 85, 45, 0.45) 0 0.25rem, rgba(255, 250, 235, 0.55) 0.36rem, transparent 0.45rem),
-    radial-gradient(circle 0.4rem at 2.9rem 1.05rem, rgba(110, 85, 45, 0.42) 0 0.2rem, rgba(255, 250, 235, 0.5) 0.31rem, transparent 0.4rem),
-    radial-gradient(circle 0.3rem at 0.95rem 3.2rem, rgba(110, 85, 45, 0.42) 0 0.15rem, rgba(255, 250, 235, 0.5) 0.23rem, transparent 0.3rem),
-    radial-gradient(circle 0.35rem at 2.2rem 3.7rem, rgba(110, 85, 45, 0.4) 0 0.17rem, rgba(255, 250, 235, 0.5) 0.27rem, transparent 0.35rem);
-  pointer-events: none;
-  z-index: 0;
 }
 
 .college-tombstones,
@@ -309,18 +429,37 @@ input {
     inset -8px 0 10px -6px rgba(0, 0, 0, 0.45),
     var(--shadow-drop);
   color: var(--color-text-dark);
+  font-family: var(--font-display);
   font-size: 0.95rem;
   font-weight: 700;
   line-height: 1.25;
   text-align: center;
   text-decoration: none;
-  text-shadow: var(--text-outline);
+  text-shadow: var(--text-emboss);
   overflow-wrap: anywhere;
   hyphens: auto;
   cursor: pointer;
   appearance: none;
   -webkit-appearance: none;
   transition: transform 0.2s ease-out;
+}
+
+/* Mist over the base of a stone. It is wider than the stone, so it spills past the edges, and it
+   drifts sideways (animations.css). The pointer passes through it. */
+.tombstone__fog {
+  position: absolute;
+  left: -25%;
+  right: -25%;
+  bottom: -1rem;
+  z-index: 3;
+  height: 4.5rem;
+  background:
+    radial-gradient(ellipse 40% 60% at 20% 70%, rgba(214, 226, 242, 0.5), transparent 72%),
+    radial-gradient(ellipse 45% 55% at 62% 82%, rgba(214, 226, 242, 0.46), transparent 72%),
+    radial-gradient(ellipse 35% 50% at 90% 60%, rgba(214, 226, 242, 0.38), transparent 72%),
+    radial-gradient(ellipse 50% 100% at 50% 100%, rgba(200, 214, 232, 0.42), transparent 85%);
+  filter: blur(7px);
+  pointer-events: none;
 }
 
 /* Carved rim */
@@ -458,14 +597,14 @@ dialog::backdrop {
   margin: 0 0 1rem;
   font-size: 1.5rem;
   color: var(--color-ink);
-  text-shadow: none;
+  text-shadow: var(--text-emboss-parchment);
 }
 
 /* The deadline page sits on the dark sky, so its heading gets the outline. */
 .deadline-page .dialog-title,
 #deadline-page-heading {
   color: var(--color-text-dark);
-  text-shadow: var(--text-outline);
+  text-shadow: var(--text-emboss);
 }
 
 /* Form */
@@ -807,6 +946,7 @@ dialog::backdrop {
   padding: 1rem;
   text-align: center;
   font-weight: bold;
+  letter-spacing: 0.02em;
   color: var(--color-header-text);
   text-shadow: var(--text-outline);
 }

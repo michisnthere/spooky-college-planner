@@ -23,6 +23,8 @@ import {
   updateDeadline,
 } from './api/client.js';
 import { getStudentId } from './api/student.js';
+import { initParallax } from './ui/parallax.js';
+import { initWobble } from './ui/wobble.js';
 
 /** Shown when the college saved but its deadline did not. */
 export const DEADLINE_NOT_SAVED_MESSAGE = 'College added, but its deadline could not be saved.';
@@ -372,6 +374,8 @@ export async function startDeadlinePage() {
 }
 
 function start() {
+  initParallax();
+  initWobble();
   if (document.getElementById('college-tombstones')) {
     initApp();
     loadSavedColleges().catch((error) => {

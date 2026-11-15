@@ -8,12 +8,21 @@
   <link rel="stylesheet" href="css/animations.css">
 </head>
 <body>
+  <div class="scenery" aria-hidden="true">
+    <div class="scenery__layer scenery__layer--moon" data-parallax-speed="0.03">
+      <div class="scenery__moon"></div>
+    </div>
+    <div class="scenery__layer scenery__layer--clouds" data-parallax-speed="0.08" data-parallax-tile="1200"></div>
+    <div class="scenery__layer scenery__layer--hills" data-parallax-speed="0.15" data-parallax-tile="1600"></div>
+    <div class="scenery__layer scenery__layer--trees" data-parallax-speed="0.3" data-parallax-tile="1400"></div>
+    <div class="scenery__fog"></div>
+  </div>
   <header class="site-header">
     <h1 class="site-title">Spooky College Planner</h1>
     <p class="site-tagline">Bury your college worries and track every deadline.</p>
   </header>
 
-  <main class="main-content">
+  <main class="main-content main-content--graveyard">
     <section class="graveyard" id="graveyard" aria-labelledby="graveyard-heading">
       <h2 id="graveyard-heading" class="visually-hidden">Your college graveyard</h2>
 
@@ -23,10 +32,10 @@
 
       <div class="special-tombstones">
         <button type="button" class="tombstone tombstone--special tombstone--rounded tombstone--add" id="add-college-button" aria-haspopup="dialog" aria-controls="add-college-dialog">
-          Add College
+          Add College<span class="tombstone__fog" aria-hidden="true"></span>
         </button>
         <a class="tombstone tombstone--special tombstone--rounded tombstone--deadline" id="deadline-tracker-link" href="deadlines.html">
-          Deadline Tracker
+          Deadline Tracker<span class="tombstone__fog" aria-hidden="true"></span>
         </a>
       </div>
     </section>

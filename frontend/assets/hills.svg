@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 320" width="1600" height="320" preserveAspectRatio="none">
+  <!-- Two ridges of distant hills. Each curve leaves the left edge and arrives at the right edge
+       at the same height and slope, so the tile repeats without a seam. -->
+  <path fill="#0f1a35" d="M0,200 C200,120 400,120 600,190 C800,260 1000,260 1200,170 C1300,130 1400,280 1600,200 L1600,320 L0,320 Z"/>
+  <path fill="#0a1228" d="M0,250 C250,200 450,190 700,240 C900,285 1000,285 1200,255 C1300,240 1350,300 1600,250 L1600,320 L0,320 Z"/>
+</svg>

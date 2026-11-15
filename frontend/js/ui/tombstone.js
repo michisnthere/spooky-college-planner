@@ -48,6 +48,17 @@ export function setTombstoneSubmitted(card, submitted) {
 }
 
 /**
+ * Creates the drifting mist laid over the base of a stone. It is decoration only: hidden from
+ * screen readers, it ignores the pointer, and it holds no text.
+ * @returns {HTMLSpanElement}
+ */
+export function createFog() {
+  const fog = document.createElement('span');
+  fog.className = 'tombstone__fog';
+  fog.setAttribute('aria-hidden', 'true');
+  return fog;
+}
+/**
  * Creates a tombstone card for one college. The card has a stone button that
  * selects the college, and a sibling delete button. The delete button is not
  * nested inside the stone because interactive elements cannot be nested.
@@ -71,6 +82,7 @@ export function createTombstoneCard(college, handlers = {}) {
   stone.type = 'button';
   stone.className = `tombstone ${TOMBSTONE_SHAPE_CLASS} college-tombstone__stone`;
   stone.textContent = name;
+  stone.append(createFog());
   stone.addEventListener('click', () => {
     if (handlers.onSelect) handlers.onSelect(college);
   });

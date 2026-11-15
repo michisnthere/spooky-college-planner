@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 260" width="1200" height="260">
+  <!-- Faint clouds. Every cloud sits well inside the tile, so the tile repeats without a seam. -->
+  <defs>
+    <filter id="soft" x="-20%" y="-60%" width="140%" height="220%">
+      <feGaussianBlur stdDeviation="14"/>
+    </filter>
+  </defs>
+  <g fill="#9fb2d6" filter="url(#soft)">
+    <g opacity="0.14">
+      <ellipse cx="260" cy="90" rx="150" ry="22"/>
+      <ellipse cx="340" cy="72" rx="90" ry="20"/>
+      <ellipse cx="190" cy="102" rx="95" ry="16"/>
+    </g>
+    <g opacity="0.1">
+      <ellipse cx="690" cy="160" rx="170" ry="24"/>
+      <ellipse cx="760" cy="140" rx="100" ry="20"/>
+      <ellipse cx="610" cy="172" rx="90" ry="15"/>
+    </g>
+    <g opacity="0.12">
+      <ellipse cx="1000" cy="62" rx="110" ry="18"/>
+      <ellipse cx="1060" cy="50" rx="70" ry="15"/>
+    </g>
+  </g>
+</svg>
