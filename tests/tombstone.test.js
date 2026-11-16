@@ -60,13 +60,11 @@ test('renderTombstones replaces the previous cards, and an empty list clears the
   assert.equal(container.children.length, 0, 'empty list leaves no cards');
 });
 
-test('a missing college name falls back to a placeholder on the stone and the delete label', async () => {
+test('a missing college name falls back to a placeholder on the stone', async () => {
   const { graveyard, container } = await setup();
   graveyard.renderTombstones([{ id: 'n1', name: null }]);
   const stone = stonesIn(container)[0];
-  const del = cardFor(container, 'n1').querySelector('.tombstone-delete');
   assert.equal(stone.textContent, 'Unnamed college');
-  assert.equal(del.getAttribute('aria-label'), 'Delete Unnamed college');
 });
 
 test('every card uses the single fixed rounded shape', async () => {
@@ -100,28 +98,35 @@ test('adding a college that already has a card does not create a duplicate', asy
   assert.equal(existing, cardFor(container, 'a1'), 'returns the existing card');
 });
 
-test('clicking a stone calls onSelect with that college, and the delete button does not', async () => {
+test('clicking a stone calls onSelect with that college', async () => {
   const selected = [];
   const { graveyard, container } = await setup({ onSelect: (c) => selected.push(c.id) });
   graveyard.renderTombstones(SAMPLE);
   cardFor(container, 'b2').querySelector('.college-tombstone__stone').click();
   assert.deepEqual(selected, ['b2']);
-  cardFor(container, 'b2').querySelector('.tombstone-delete').click();
-  assert.deepEqual(selected, ['b2'], 'delete click does not select the college');
+});
+test('a card has only the stone: no delete button on the tombstone', async () => {
+  const { graveyard, container } = await setup();
+  graveyard.renderTombstones(SAMPLE);
+  graveyard.addTombstone({ id: 'd4', name: 'Stanford' });
+  for (const card of Array.from(container.children)) {
+    assert.equal(card.querySelectorAll('button').length, 1, 'one button: the stone');
+    assert.equal(card.querySelector('.tombstone-delete'), null);
+    assert.doesNotMatch(card.textContent, /Delete/);
+  }
 });
 
-test('delete does nothing when the user cancels the confirmation', async () => {
+test('requestDeleteCollege does nothing when the user cancels the confirmation', async () => {
   const deleted = [];
   const { graveyard, container } = await setup({ onDelete: (c) => deleted.push(c.id) });
   graveyard.renderTombstones(SAMPLE);
   globalThis.confirm = () => false;
-  cardFor(container, 'a1').querySelector('.tombstone-delete').click();
-  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(await graveyard.requestDeleteCollege(SAMPLE[0]), false, 'reports that nothing was deleted');
   assert.deepEqual(deleted, [], 'onDelete is not called');
   assert.equal(container.children.length, 3, 'card stays');
 });
 
-test('delete asks for confirmation, calls onDelete, and removes the card', async () => {
+test('requestDeleteCollege asks for confirmation, calls onDelete, and removes the card', async () => {
   const deleted = [];
   const prompts = [];
   const { graveyard, container } = await setup({ onDelete: (c) => deleted.push(c.id) });
@@ -130,8 +135,7 @@ test('delete asks for confirmation, calls onDelete, and removes the card', async
     prompts.push(message);
     return true;
   };
-  cardFor(container, 'b2').querySelector('.tombstone-delete').click();
-  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(await graveyard.requestDeleteCollege(SAMPLE[1]), true, 'reports that it was deleted');
   assert.equal(prompts.length, 1, 'one confirmation prompt');
   assert.match(prompts[0], /Yale University/, 'prompt names the college');
   assert.deepEqual(deleted, ['b2']);
@@ -139,7 +143,7 @@ test('delete asks for confirmation, calls onDelete, and removes the card', async
   assert.equal(container.children.length, 2);
 });
 
-test('when onDelete fails, the card stays and onError receives the error', async () => {
+test('when onDelete fails, the card stays, onError receives the error, and false is returned', async () => {
   const failure = new Error('network down');
   const errors = [];
   const { graveyard, container } = await setup({
@@ -149,8 +153,7 @@ test('when onDelete fails, the card stays and onError receives the error', async
     onError: (err) => errors.push(err),
   });
   graveyard.renderTombstones(SAMPLE);
-  cardFor(container, 'c3').querySelector('.tombstone-delete').click();
-  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(await graveyard.requestDeleteCollege(SAMPLE[2]), false);
   assert.deepEqual(errors, [failure]);
   assert.ok(cardFor(container, 'c3'), 'card is kept so the user can retry');
 });

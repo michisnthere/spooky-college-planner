@@ -12,7 +12,7 @@ As a student managing multiple applications, I want to see my schools represente
 
 ### 3.1 Graveyard Layout & Tombstones
 The system shall render a horizontally scrollable graveyard interface displaying a tombstone card for each saved college. When a college is added, its tombstone shall rise up out of the grass with a reveal animation. The graveyard also shall display two special tombstones: an "Add College" tombstone, which opens a dialog containing the add-college form, and a "Deadline Tracker" tombstone, which opens the separate deadline page.
-When a user clicks on a specific tombstone card, the system shall display a zoomed-in detail view showing relevant information such as location, state, and acceptance rate.
+When a user clicks on a specific tombstone card, the system shall display a zoomed-in detail view showing relevant information such as location, state, and acceptance rate. Tombstone cards shall not carry a delete button. The detail view shall have a red Delete button below the application status box. After the user confirms, the system shall delete the college, close the detail view and remove the tombstone. If the delete fails, the detail view shall stay open and show the error.
 
 ### 3.2 Plants vs. Zombies Deadline Tracker
 The system shall display, on the separate deadline page, a horizontal deadline track where a zombie icon advances progressively toward a target line as the application deadline draws closer. The deadline page shall be styled to resemble the lawn screen of the Plants vs. Zombies game, with horizontal lanes of grass and a zombie that walks along the lane toward the target. The deadline page shall show one lane per tracked college. Each lane has its own zombie, drawn in detail, that walks from the left toward a sunflower at the right end of the lane. The college name is written on the sunflower. The days remaining appear on the space between the zombie and the sunflower. When the user clicks "Mark as completed" on a lane, the system shall play a zombie death animation, replace the zombie's position with a tombstone showing the completion date, and record the application as submitted. When days remaining reaches 0, the system shall replace the sunflower with a tombstone that reads "deadline has passed."
@@ -28,7 +28,7 @@ If a college name is not found in the database or the API request fails, the sys
 
 The system shall render the graveyard ground as grass, with muted gray-green tombstones standing on it. The night sky shall appear above the graveyard. The system shall render the moon as a detailed element with surface craters and a glow.
 The system shall render the header in dark purple with orange highlights. The system shall render dialogs in colors that contrast with the page background, so they remain visible against it.
-The system shall give all text that sits on a dark background a white outline, so the text stays legible. This applies to black text as well.
+The system shall keep all text legible without a white outline around the letters. Bright text on a dark background uses a soft dark shadow. Dark text on a stone uses a light letterpress edge instead of an outline.
 The system shall render each tombstone with detailed styling, including stone edges, carved detail, weathering, and shadows.
 The system shall render tombstones in a variety of shapes, including at least rounded-top, pointed-top, cross, slab, and arched shapes.
 In a future release, the system shall assign each tombstone a shape based on the college's ranking category, so that colleges in the top 10 and colleges in the top 50 display different shapes. The ranking data source is not yet defined and is out of scope for the current release.
@@ -37,7 +37,7 @@ In a future release, the system shall assign each tombstone a shape based on the
 
 **Fonts.** The system shall set headers and larger text in Fraunces, and body and smaller paragraph text in Plus Jakarta Sans. Each font shall have a serif or sans-serif fallback stack so text stays readable while the font loads.
 
-**Embossed typography.** The system shall render headers and other large display text with an embossed look, as if pressed or raised from the surface, using layered highlights and shadows. The embossing shall keep the text legible against its background and shall keep the white outline required in section 3.4 for text on dark backgrounds.
+**Embossed typography.** The system shall render headers and other large display text with an embossed look, as if pressed or raised from the surface, using layered highlights and shadows. The embossing shall keep the text legible against its background and shall not use a white outline.
 
 **Parallax scenery.** The system shall render the night scenery in several layers that move at different speeds as the user scrolls, so that distant layers move slower than near layers. From farthest to nearest the layers are: the glowing moon, faint clouds, hills, and twisted trees with graveyard silhouettes. The layers shall sit behind the tombstones and shall not block clicks or reduce text legibility. Both the page scroll and the graveyard's sideways scroll move the layers, on every page. Under reduced motion the layers shall stay fixed in place.
 

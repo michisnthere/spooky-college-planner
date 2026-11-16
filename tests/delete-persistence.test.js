@@ -23,6 +23,23 @@ globalThis.document = dom.window.document;
 Object.defineProperty(globalThis, 'localStorage', { value: dom.window.localStorage, configurable: true, writable: true });
 globalThis.SPOOKY_API_BASE_URL = BASE;
 globalThis.confirm = () => true;
+// jsdom has no <dialog> open/close. This shim covers the subset the modal uses.
+(function shimDialog(win) {
+  const proto = win.HTMLElement.prototype;
+  if (typeof proto.showModal !== 'function') proto.showModal = function showModal() { this.setAttribute('open', ''); };
+  if (typeof proto.close !== 'function') {
+    proto.close = function close() {
+      if (!this.hasAttribute('open')) return;
+      this.removeAttribute('open');
+      this.dispatchEvent(new win.Event('close'));
+    };
+  }
+  Object.defineProperty(proto, 'open', {
+    configurable: true,
+    get() { return this.tagName === 'DIALOG' && this.hasAttribute('open'); },
+    set(value) { if (value) this.setAttribute('open', ''); else this.removeAttribute('open'); },
+  });
+})(dom.window);
 globalThis.fetch = async (url, options = {}) => {
   const method = (options.method || 'GET').toUpperCase();
   sent.push(`${method} ${String(url).replace(BASE, '')}`);
@@ -34,6 +51,15 @@ const $ = (id) => document.getElementById(id);
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const cards = () => Array.from(document.querySelectorAll('#college-tombstones .college-tombstone'));
 const cardNamed = (name) => cards().find((c) => c.querySelector('.college-tombstone__stone').textContent.startsWith(name));
+// Deleting happens in the detail dialog: open the college's dialog, then press Delete college.
+function deleteFromDialog(card) {
+  const dialog = $('college-detail-dialog');
+  if (dialog.open) dialog.close();
+  card.querySelector('.college-tombstone__stone').click();
+  const button = $('detail-delete-button');
+  button.click();
+  return button;
+}
 async function until(fn, label) {
   for (let i = 0; i < 200; i += 1) { if (await fn()) return; await wait(15); }
   throw new Error(`timed out: ${label}`);
@@ -90,7 +116,7 @@ test('backend: an unknown id, a repeat delete and a malformed id all return a 4x
     assert.equal(typeof r.body.code, 'string');
   }
 });
-test('frontend: Delete calls DELETE /api/colleges/:id, then removes the card, and the card stays gone after a reload', async () => {
+test('frontend: Delete in the detail dialog calls DELETE /api/colleges/:id, then removes the card, and the card stays gone after a reload', async () => {
   await college('UI Gone U', localDate(15));
   await college('UI Stay U', localDate(16));
   const app = await import(pathToFileURL(path.join(FRONTEND, 'js', 'app.js')).href);
@@ -100,7 +126,7 @@ test('frontend: Delete calls DELETE /api/colleges/:id, then removes the card, an
   const target = await api.raw('GET', `/api/colleges?studentId=${studentId}`);
   const goneId = target.body.data.find((c) => c.name === 'UI Gone U').id;
   sent.length = 0;
-  cardNamed('UI Gone U').querySelector('.tombstone-delete').click();
+  deleteFromDialog(cardNamed('UI Gone U'));
   await until(() => !cardNamed('UI Gone U'), 'card removal');
   assert.ok(sent.includes(`DELETE /api/colleges/${goneId}`), sent.join(' | '));
   assert.ok(cardNamed('UI Stay U'), 'the other card is untouched');
@@ -117,14 +143,16 @@ test('frontend: when the server cannot be reached, the card stays and an error i
   app.initApp();
   await app.loadSavedColleges();
   failDeletes = true;
-  cardNamed('UI Fail U').querySelector('.tombstone-delete').click();
-  await until(() => /Could not delete/.test(($('graveyard-message') || {}).textContent || ''), 'error message');
+  deleteFromDialog(cardNamed('UI Fail U'));
+  await until(() => /Could not delete/.test($('detail-status-message').textContent), 'error message in the dialog');
+  assert.equal($('college-detail-dialog').open, true, 'the dialog stays open');
   assert.ok(cardNamed('UI Fail U'), 'the card is still there');
   assert.ok((await names()).includes('UI Fail U'), 'the server still has it');
   failDeletes = false;
-  cardNamed('UI Fail U').querySelector('.tombstone-delete').click();
+  deleteFromDialog(cardNamed('UI Fail U'));
   await until(() => !cardNamed('UI Fail U'), 'card removal after retry');
-  assert.equal($('graveyard-message').textContent, '', 'the error is cleared after a success');
+  assert.equal($('college-detail-dialog').open, false, 'the dialog closes after the retry works');
+  assert.equal($('graveyard-message')?.textContent ?? '', '');
 });
 test('frontend: a server 404 (already deleted elsewhere) still removes the card', async () => {
   const c = await college('UI Ghost U');
@@ -132,7 +160,7 @@ test('frontend: a server 404 (already deleted elsewhere) still removes the card'
   app.initApp();
   await app.loadSavedColleges();
   await api.raw('DELETE', `/api/colleges/${c.id}`);
-  cardNamed('UI Ghost U').querySelector('.tombstone-delete').click();
+  deleteFromDialog(cardNamed('UI Ghost U'));
   await until(() => !cardNamed('UI Ghost U'), 'card removal');
 });
 test('frontend: cancelling the confirmation sends no request and keeps the card', async () => {
@@ -142,7 +170,7 @@ test('frontend: cancelling the confirmation sends no request and keeps the card'
   await app.loadSavedColleges();
   globalThis.confirm = () => false;
   sent.length = 0;
-  cardNamed('UI Cancel U').querySelector('.tombstone-delete').click();
+  deleteFromDialog(cardNamed('UI Cancel U'));
   await wait(100);
   globalThis.confirm = () => true;
   assert.ok(cardNamed('UI Cancel U'));
@@ -154,8 +182,7 @@ test('frontend: a double click sends one DELETE', async () => {
   app.initApp();
   await app.loadSavedColleges();
   sent.length = 0;
-  const button = cardNamed('UI Double U').querySelector('.tombstone-delete');
-  button.click();
+  const button = deleteFromDialog(cardNamed('UI Double U'));
   button.click();
   await until(() => !cardNamed('UI Double U'), 'card removal');
   assert.equal(sent.filter((s) => s.startsWith('DELETE')).length, 1);

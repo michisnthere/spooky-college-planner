@@ -340,7 +340,8 @@ async function main() {
     page.once('dialog', (d) => d.accept());
     await page.evaluate((n) => {
       const card = [...document.querySelectorAll('.college-tombstone')].find((c) => c.querySelector('.college-tombstone__stone').textContent.trim() === n);
-      card.querySelector('.tombstone-delete').click();
+      card.querySelector('.college-tombstone__stone').click();
+      document.getElementById('detail-delete-button').click();
     }, FAR.name);
     await page.waitForFunction(() => document.querySelectorAll('.college-tombstone').length === 2, { timeout: 5000 });
     await page.reload({ waitUntil: 'networkidle0' });

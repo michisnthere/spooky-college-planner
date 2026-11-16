@@ -7,6 +7,7 @@ import {
   addTombstone,
   markTombstoneSubmitted,
   clearTombstoneSubmitted,
+  requestDeleteCollege,
 } from './ui/graveyard.js';
 import { initDetailModal, openDetailModal, closeDetailModal, parseDeadline, formatIsoDate } from './ui/modal.js';
 import { initForm } from './ui/form.js';
@@ -303,9 +304,18 @@ export async function deleteCollegeOnServer(college) {
   graveyardMessage().textContent = '';
 }
 
+// Delete starts in the detail dialog, so a failure is shown inside it, where the user is looking.
+// With the dialog closed, the message goes above the graveyard.
 function showDeleteError(error) {
   const reason = String(error?.message || '').replace(/\.+\s*$/, '');
-  graveyardMessage().textContent = reason ? `${DELETE_FAILED_MESSAGE} (${reason})` : DELETE_FAILED_MESSAGE;
+  const text = reason ? `${DELETE_FAILED_MESSAGE} (${reason})` : DELETE_FAILED_MESSAGE;
+  const dialog = document.getElementById('college-detail-dialog');
+  const dialogMessage = document.getElementById('detail-status-message');
+  if (dialog?.open && dialogMessage) {
+    dialogMessage.textContent = text;
+    return;
+  }
+  graveyardMessage().textContent = text;
 }
 
 // Opens the detail dialog with the cached status and deadline, if they are loaded.
@@ -329,6 +339,7 @@ export function initApp({ colleges = [] } = {}) {
   initDetailModal({
     onStatusChange: (college, status) => changeApplicationStatus(college, status),
     onDeadlineChange: (college, deadline) => changeDeadline(college, deadline),
+    onDelete: (college) => requestDeleteCollege(college),
   });
   initForm({ lookup: lookupCollege, onSubmit: saveNewCollege });
   initGraveyard(container, {

@@ -59,16 +59,14 @@ export function createFog() {
   return fog;
 }
 /**
- * Creates a tombstone card for one college. The card has a stone button that
- * selects the college, and a sibling delete button. The delete button is not
- * nested inside the stone because interactive elements cannot be nested.
+ * Creates a tombstone card for one college: a stone button that selects the college.
+ * Deleting is done from the detail dialog, not from the card.
  *
  * Name text is set with textContent, never innerHTML, so names cannot inject markup.
  *
  * @param {object} college Saved college record. Needs `id` and `name`.
  * @param {object} [handlers]
  * @param {(college: object) => void} [handlers.onSelect] Called when the stone is clicked.
- * @param {(college: object) => void} [handlers.onDelete] Called when the delete button is clicked.
  * @returns {HTMLDivElement} The card wrapper element.
  */
 export function createTombstoneCard(college, handlers = {}) {
@@ -87,16 +85,8 @@ export function createTombstoneCard(college, handlers = {}) {
     if (handlers.onSelect) handlers.onSelect(college);
   });
 
-  const deleteButton = document.createElement('button');
-  deleteButton.type = 'button';
-  deleteButton.className = 'btn tombstone-delete';
-  deleteButton.textContent = 'Delete';
-  deleteButton.setAttribute('aria-label', `Delete ${name}`);
-  deleteButton.addEventListener('click', () => {
-    if (handlers.onDelete) handlers.onDelete(college);
-  });
 
-  card.append(stone, deleteButton);
+  card.append(stone);
   if (college.status === 'submitted') setTombstoneSubmitted(card, true);
   return card;
 }

@@ -114,6 +114,7 @@ function bindListeners() {
   for (const button of document.querySelectorAll('#college-detail-dialog .btn--status')) {
     button.addEventListener('click', () => handleStatusClick(button.dataset.status));
   }
+  el('detail-delete-button').addEventListener('click', () => handleDeleteClick());
 }
 
 // Shows the deadline date, days remaining, and the date input. Also records the saved date,
@@ -168,6 +169,25 @@ async function handleStatusClick(status) {
   }
 }
 
+// Runs the onDelete callback. The dialog closes only when it resolves with true (deleted).
+// A cancelled confirmation or a failed delete leaves the dialog open. The button stays
+// disabled while the request runs, so a double click cannot send two.
+async function handleDeleteClick() {
+  if (!currentCollege || !handlers.onDelete) return;
+  const college = currentCollege;
+  const button = el('detail-delete-button');
+  button.disabled = true;
+  showStatusMessage('');
+  try {
+    const deleted = await handlers.onDelete(college);
+    if (deleted === true && currentCollege === college) closeDetailModal();
+  } catch (error) {
+    if (currentCollege === college) showStatusMessage(`Could not delete: ${error.message || 'unknown error'}`);
+  } finally {
+    button.disabled = !handlers.onDelete;
+  }
+}
+
 /**
  * Sets the optional status-change callback and binds the dialog's listeners.
  * Call once on page load. Safe to call again to replace the callback.
@@ -177,6 +197,10 @@ async function handleStatusClick(status) {
  * @param {(college: object, deadline: string) => Promise<string|void>|string|void} [callbacks.onDeadlineChange]
  *   Saves a new deadline ("YYYY-MM-DD", or "" when cleared). May resolve with the saved "YYYY-MM-DD".
  *   Enables the deadline input. On rejection, the input returns to the saved date.
+ * @param {(college: object) => Promise<boolean>|boolean} [callbacks.onDelete]
+ *   Deletes the college, after its own confirmation. Resolve true when the college was deleted: the
+ *   dialog then closes. Resolve false (cancelled or failed) to keep it open. A rejection shows the
+ *   error in the dialog. Enables the Delete button.
  */
 export function initDetailModal(callbacks = {}) {
   handlers = callbacks;
@@ -206,6 +230,9 @@ export function openDetailModal(college, details = {}) {
 
   // The date input is editable only when app.js supplies onDeadlineChange.
   el('detail-deadline-input').disabled = !handlers.onDeadlineChange;
+  const deleteButton = el('detail-delete-button');
+  deleteButton.disabled = !handlers.onDelete;
+  deleteButton.setAttribute('aria-label', `Delete ${college.name || 'this college'}`);
 
   setPressedStatus(status);
   showStatusMessage('');

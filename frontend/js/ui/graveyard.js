@@ -34,10 +34,17 @@ function findCard(collegeId) {
   ) || null;
 }
 
-// Asks for confirmation, runs the optional onDelete callback, then removes the card.
-// A second click on Delete while the first request is still running does nothing.
+// A second request for the same college while the first is still running does nothing.
 const deleting = new Set();
-async function confirmAndDelete(college) {
+
+/**
+ * Asks for confirmation, runs the onDelete callback, then removes the college's card. Called from
+ * the detail dialog's Delete button. If onDelete throws, the card stays and onError receives the error.
+ * @param {object} college Needs `id` and `name`.
+ * @returns {Promise<boolean>} True when the college was deleted. False when the user cancelled,
+ *   a delete for this college was already running, or the delete failed.
+ */
+export async function requestDeleteCollege(college) {
   const key = String(college.id);
   if (deleting.has(key)) return false;
   const name = college.name || 'this college';
@@ -61,7 +68,6 @@ const cardHandlers = {
   onSelect: (college) => {
     if (handlers.onSelect) handlers.onSelect(college);
   },
-  onDelete: (college) => confirmAndDelete(college),
 };
 
 /**

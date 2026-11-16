@@ -69,17 +69,17 @@
 
   /* Text */
   --color-text-dark: #120818;
-  --text-outline: 0 0 2px #ffffff,
-    1px 0 0 #ffffff, -1px 0 0 #ffffff,
-    0 1px 0 #ffffff, 0 -1px 0 #ffffff,
-    1px 1px 0 #ffffff, -1px -1px 0 #ffffff,
-    1px -1px 0 #ffffff, -1px 1px 0 #ffffff;
+  /* No white outline. Bright text gets a soft dark shadow for contrast against the night sky. */
+  --text-shadow-bright: 0 1px 2px rgba(0, 0, 0, 0.75);
 
-  /* Embossed type. On dark backgrounds the white outline stays and a dark offset shadow lifts the
-     letters off the surface. On parchment a light edge above and a dark edge below press them in. */
-  --text-emboss: var(--text-outline),
-    1px 2px 1px rgba(0, 0, 0, 0.6),
+  /* Embossed type. Bright text on the dark sky is lifted by a light top edge and a dark offset shadow.
+     Dark text on stone is pressed in with a light edge below and a dark edge above.
+     Dialogs on parchment use the same press-in look. */
+  --text-emboss: 0 -1px 0 rgba(255, 255, 255, 0.3),
+    1px 2px 1px rgba(0, 0, 0, 0.65),
     2px 4px 5px rgba(0, 0, 0, 0.35);
+  --text-emboss-stone: 0 1px 0 rgba(255, 255, 255, 0.55),
+    0 -1px 0 rgba(0, 0, 0, 0.35);
   --text-emboss-parchment: 0 1px 0 rgba(255, 255, 255, 0.9),
     0 -1px 0 rgba(46, 17, 64, 0.4),
     1px 2px 2px rgba(46, 17, 64, 0.25);
@@ -106,7 +106,6 @@ html {
   background: var(--color-sky-top);
 }
 
-/* Body text sits on the dark sky, so it gets the white outline. */
 body {
   margin: 0;
   min-height: 100vh;
@@ -116,7 +115,6 @@ body {
   color: var(--color-text-dark);
   background: linear-gradient(to bottom, var(--color-sky-top), var(--color-sky-mid) 60%, var(--color-sky-bottom));
   background-attachment: fixed;
-  text-shadow: var(--text-outline);
 }
 
 button,
@@ -170,7 +168,7 @@ hr {
 
 /* --------------------------------------------------------------------------
    3. Header (dark purple band with orange highlights)
-   Sits on a dark background, so its text gets the white outline.
+   Sits on a dark background, so its bright text gets a soft dark shadow.
    -------------------------------------------------------------------------- */
 .site-header {
   position: relative;
@@ -178,7 +176,7 @@ hr {
   padding: 1.25rem 1rem 1rem;
   text-align: center;
   color: var(--color-header-text);
-  text-shadow: var(--text-outline);
+  text-shadow: var(--text-shadow-bright);
   background: linear-gradient(to bottom, var(--color-header-top), var(--color-header-bottom));
   border-bottom: 4px solid var(--color-accent);
   box-shadow:
@@ -208,7 +206,7 @@ hr {
   margin-top: 0.6rem;
   font-weight: bold;
   color: #ffb35c;
-  text-shadow: var(--text-outline);
+  text-shadow: var(--text-shadow-bright);
 }
 
 /* --------------------------------------------------------------------------
@@ -391,11 +389,6 @@ hr {
   flex: 0 0 auto;
 }
 
-.tombstone-delete {
-  padding: 0.3rem 0.6rem;
-  font-size: 0.8rem;
-  text-shadow: var(--text-outline);
-}
 
 /* --------------------------------------------------------------------------
    6. Tombstones
@@ -435,7 +428,7 @@ hr {
   line-height: 1.25;
   text-align: center;
   text-decoration: none;
-  text-shadow: var(--text-emboss);
+  text-shadow: var(--text-emboss-stone);
   overflow-wrap: anywhere;
   hyphens: auto;
   cursor: pointer;
@@ -600,10 +593,10 @@ dialog::backdrop {
   text-shadow: var(--text-emboss-parchment);
 }
 
-/* The deadline page sits on the dark sky, so its heading gets the outline. */
+/* The deadline page sits on the dark sky, so its heading is bright and embossed. */
 .deadline-page .dialog-title,
 #deadline-page-heading {
-  color: var(--color-text-dark);
+  color: var(--color-header-text);
   text-shadow: var(--text-emboss);
 }
 
@@ -929,6 +922,26 @@ dialog::backdrop {
   }
 }
 
+/* Delete button in the detail dialog: red, alone below the status box. */
+.detail-danger {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+}
+
+.btn--delete,
+#detail-delete-button {
+  background: linear-gradient(to bottom, #e04545, #b81d1d 55%, #8f1212);
+  border-color: #5c0a0a;
+  color: #ffffff;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.6);
+}
+
+.btn--delete:hover:not(:disabled),
+#detail-delete-button:hover:not(:disabled) {
+  background: linear-gradient(to bottom, #f05a5a, #cc2222 55%, #a01414);
+}
+
 /* Detail dialog: the button for the saved application status is pressed. */
 .btn--status[aria-pressed="true"] {
   background: var(--color-parchment-deep);
@@ -939,7 +952,7 @@ dialog::backdrop {
 /* --------------------------------------------------------------------------
    10. Deadline lanes (Task 15): Plants vs. Zombies lawn, one lane per college
    Zombie left, sunflower or tombstone at the right end, days label between.
-   Text on the dark sky uses the white outline (--text-outline).
+   Bright text on the dark sky uses a soft dark shadow (--text-shadow-bright).
    -------------------------------------------------------------------------- */
 .deadline-empty {
   margin: 0;
@@ -948,7 +961,7 @@ dialog::backdrop {
   font-weight: bold;
   letter-spacing: 0.02em;
   color: var(--color-header-text);
-  text-shadow: var(--text-outline);
+  text-shadow: var(--text-shadow-bright);
 }
 
 .deadline-lane {
@@ -1014,7 +1027,7 @@ dialog::backdrop {
   white-space: nowrap;
   font-weight: 700;
   color: #ffffff;
-  text-shadow: var(--text-outline);
+  text-shadow: var(--text-shadow-bright);
   transition: left 0.8s ease-in-out;
 }
 
@@ -1034,7 +1047,7 @@ dialog::backdrop {
   text-align: right;
   font-weight: bold;
   color: #ffffff;
-  text-shadow: var(--text-outline);
+  text-shadow: var(--text-shadow-bright);
 }
 
 /* Zombie: body parts are absolute inside a 4rem x 6.2rem box. */
@@ -1208,7 +1221,7 @@ dialog::backdrop {
   font-weight: 700;
   line-height: 1.1;
   color: #ffffff;
-  text-shadow: var(--text-outline);
+  text-shadow: var(--text-shadow-bright);
   overflow-wrap: anywhere;
 }
 
@@ -1255,14 +1268,14 @@ dialog::backdrop {
   font-weight: 900;
   line-height: 1;
   color: #b8f08a;
-  text-shadow: var(--text-outline);
+  text-shadow: var(--text-shadow-bright);
   pointer-events: none;
 }
 
 /* Zombie on a graveyard card. Sits above the stone and its delete button. */
 .tombstone-zombie {
   left: calc(50% - 2rem);
-  bottom: 2.75rem;
+  bottom: 0.5rem;
   z-index: 2;
   pointer-events: none;
 }

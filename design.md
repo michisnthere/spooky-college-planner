@@ -45,6 +45,7 @@ The system is built using a client-server architecture with separation of concer
 - College name (RIP text)
 - College icon or grave marker
 - Click to expand detail view
+- No delete button on the card (delete lives in the detail view)
 
 **Detail View Modal**
 - College location
@@ -52,6 +53,7 @@ The system is built using a client-server architecture with separation of concer
 - Acceptance rate
 - Deadline countdown
 - Application status buttons
+- Red "Delete college" button below the status box. It asks for confirmation, then deletes. On success the modal closes and the tombstone is removed. On failure the modal stays open and shows the error in its message line. The button is disabled while the request runs.
 
 **Deadline Tracker Component**
 - Horizontal timeline
@@ -72,7 +74,7 @@ The system is built using a client-server architecture with separation of concer
 ### 3.2 Styling Approach
 
 - **Theme**: Night graveyard. The header uses dark purple with orange highlights. The graveyard ground is grass, with muted gray-green tombstones on it. The night sky sits above the graveyard. The moon is a detailed CSS element with craters and a glow. Dialogs use a parchment surface.
-- **Text legibility**: All text on a dark background uses a white outline (for example, layered text-shadow). This applies to black text as well.
+- **Text legibility**: No white outline around letters. Bright text on a dark background uses a soft dark shadow (--text-shadow-bright). Dark text on a stone uses a light letterpress edge (--text-emboss-stone). The deadline page heading is bright.
 - **Layout**: Flexbox for responsive design, with a single breakpoint at 768px
 - **Scrolling**: Horizontal scroll for graveyard and deadline tracker
 - **Animations**: CSS keyframes in animations.css: zombieWalk (looping walk), cardReveal (tombstone rises from the grass), zombieDefeat (zombie falls backward, with a dirt particle burst), and modalFadeIn. Animations use only transform and opacity. All animations are disabled under prefers-reduced-motion.
@@ -91,7 +93,7 @@ Each tombstone is a single element with a shape modifier class, for example `.to
 These additions implement requirements section 3.5. All of them are CSS and small vanilla JavaScript. No new runtime dependencies.
 
 - **Fonts**: Fraunces (headers, large text) and Plus Jakarta Sans (body, small text). Defined as `--font-display` and `--font-body` in style.css. The fonts are self-hosted as woff2 files under `frontend/fonts/` and declared with `@font-face` and `font-display: swap`, so the existing content security policy (own scripts and styles only) needs no change. Fallbacks: `Georgia, serif` and `system-ui, sans-serif`.
-- **Embossed text**: a shared class (for example `.embossed`) built from layered `text-shadow`: a light 1px highlight up and to the left, a dark 1px shadow down and to the right, and the existing white outline from `--text-outline`. Applied to the page title, headings and tombstone names.
+- **Embossed text**: three shared variables built from layered `text-shadow`, with no white outline. `--text-emboss` (bright text on the dark sky) is a faint light edge above and a dark offset shadow below right. `--text-emboss-stone` (dark text on stone) is a light edge below and a dark edge above. `--text-emboss-parchment` (dialogs) presses the letters in. Applied to the page title, headings and tombstone names.
 - **Parallax**: a fixed, full-viewport `.scenery` container behind the content with `pointer-events: none` and `aria-hidden="true"`. Layers, far to near: moon (existing moon element moved into the scenery), clouds, hills, trees and graveyard silhouette. Layers are inline or CSS-background SVG. A small module `frontend/js/ui/parallax.js` listens to scroll (passive listener, batched with `requestAnimationFrame`) and sets each layer's `translate3d` from its speed factor (for example 0.1, 0.2, 0.4, 0.6 of the scroll distance). The graveyard scrolls horizontally, so the module reads horizontal scroll of the graveyard container and vertical page scroll, whichever applies on the page. Under reduced motion the module does nothing.
 - **Wobbly stones**: on `.tombstone:hover` and `:focus-visible`, a `stoneRumble` keyframe in animations.css rotates the card between about -1.5 and 1.5 degrees (never beyond 2) with a few small `translateY` jolts, 0.4s, played once per hover. On touch screens rontend/js/ui/wobble.js adds .tombstone--wobble on a tap (not a mouse click), which plays the same motion under the name stoneRumbleTap so it restarts on every tap. The rotation uses `transform-origin: bottom center` so the base stays on the ground. Transform only, so layout and neighbors do not move.
 - **Gate dividers**: rontend/assets/gate-divider.svg is one repeating unit (thin vertical bars, spearhead tips, a scrollwork medallion) in #2E323E, with bars evenly spaced across the tile edge. A global hr rule in style.css uses it as a epeat-x background, so any <hr> added later is styled with no extra markup. The pages have no <hr> today, so none are placed.

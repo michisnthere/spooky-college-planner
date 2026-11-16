@@ -48,7 +48,8 @@ Each task lists its steps and verification checks as plain bullets. Only the top
     { "wave": 35, "tasks": ["35"] },
     { "wave": 36, "tasks": ["36"] },
     { "wave": 37, "tasks": ["37", "38", "39", "40"] },
-    { "wave": 38, "tasks": ["41"] }
+    { "wave": 38, "tasks": ["41"] },
+    { "wave": 39, "tasks": ["42"] }
   ]
 }
 ```
@@ -514,6 +515,15 @@ Refer to requirements.md section 3.5 and design.md section 3.4. Every task keeps
     3. Check both pages in headless Chrome at 375px and desktop width for console errors and CSP errors.
   - Verification:
     - The full test suite passes and the pages show no console errors.
+- [x] 42. Delete From the Detail View & Plain Text
+  - Description: Move Delete from the tombstone cards into the detail dialog, and remove the white outline around text.
+  - Steps:
+    1. Remove the Delete button from tombstone cards. Add a red "Delete college" button below the application status box in the detail dialog.
+    2. Keep the confirmation. After a successful delete, close the dialog and remove the tombstone and its deadline lane. On failure, keep the dialog open and show the error inside it.
+    3. Remove the white text outline. Bright text gets a soft dark shadow, dark text on stone gets a light letterpress edge, and the deadline page heading becomes bright.
+    4. Update the tests that clicked the card's Delete button.
+  - Verification:
+    - Cards have no Delete button. Delete from the dialog removes the college on the server and the page, survives a refresh, and a failed delete leaves the college in place with an error in the dialog.
 ## Notes
 
 - Estimated timeline: 15 to 21 hours of development.

@@ -1,5 +1,5 @@
-// Task 13 wiring checks: app.js connects tombstone clicks to the detail modal and
-// tombstone delete buttons to card removal, using the real index.html markup.
+// Task 13 wiring checks: app.js connects tombstone clicks to the detail modal and the dialog's
+// Delete button to card removal, using the real index.html markup.
 // Run with: node --test tests/graveyard-app.test.js
 'use strict';
 
@@ -105,35 +105,93 @@ test('clicking a tombstone opens the detail modal with that college', async () =
   assert.equal(text('detail-acceptance-rate'), '4.6%');
 });
 
-test('clicking delete does not open the detail modal', async () => {
+const deleteButton = () => document.getElementById('detail-delete-button');
+const openDetail = (id) => cardFor(id).querySelector('.college-tombstone__stone').click();
+const settle = () => new Promise((resolve) => setTimeout(resolve, 50));
+
+test('cards have no delete button, and the detail dialog has one below the status box', async () => {
   const { initApp } = await loadApp();
   reset();
   initApp({ colleges: COLLEGES });
-  cardFor('h1').querySelector('.tombstone-delete').click();
-  await new Promise((resolve) => setTimeout(resolve, 50));
-  assert.equal(dialog().open, false, 'modal stays closed on delete');
+  for (const card of container().children) assert.equal(card.querySelector('button.tombstone-delete, .tombstone-delete'), null);
+  const status = document.querySelector('#college-detail-dialog .status-actions');
+  assert.ok(status, 'status box exists');
+  assert.ok(status.compareDocumentPosition(deleteButton()) & dom.window.Node.DOCUMENT_POSITION_FOLLOWING, 'delete comes after the status box');
+  assert.equal(deleteButton().textContent.trim(), 'Delete college');
+  assert.ok(dialog().contains(deleteButton()));
 });
 
-test('confirming delete removes the card from the graveyard', async () => {
+test('confirming delete in the detail dialog removes the card and closes the dialog', async () => {
   const { initApp } = await loadApp();
   reset();
   initApp({ colleges: COLLEGES });
-  cardFor('h1').querySelector('.tombstone-delete').click();
-  await new Promise((resolve) => setTimeout(resolve, 50));
+  openDetail('h1');
+  assert.equal(dialog().open, true);
+  assert.equal(deleteButton().disabled, false);
+  assert.equal(deleteButton().getAttribute('aria-label'), 'Delete Harvard University');
+  deleteButton().click();
+  await settle();
   assert.equal(cardFor('h1'), null);
   assert.equal(container().children.length, 1);
+  assert.equal(dialog().open, false, 'dialog closes after a successful delete');
 });
 
-test('cancelling delete keeps the card in the graveyard', async () => {
+test('cancelling the confirmation keeps the card and leaves the dialog open', async () => {
   const { initApp } = await loadApp();
   reset();
   initApp({ colleges: COLLEGES });
+  openDetail('y2');
   globalThis.confirm = () => false;
-  cardFor('y2').querySelector('.tombstone-delete').click();
-  await new Promise((resolve) => setImmediate(resolve));
+  deleteButton().click();
+  await settle();
   assert.ok(cardFor('y2'), 'card is still there');
+  assert.equal(dialog().open, true, 'dialog stays open');
+  assert.equal(deleteButton().disabled, false, 'the button works again');
 });
 
+test('a failed delete keeps the card, keeps the dialog open and shows the error in the dialog', async () => {
+  const { initApp } = await loadApp();
+  reset();
+  initApp({ colleges: COLLEGES });
+  globalThis.fetch = async () => { throw new TypeError('network down'); };
+  openDetail('y2');
+  deleteButton().click();
+  await settle();
+  assert.ok(cardFor('y2'), 'card is kept');
+  assert.equal(dialog().open, true, 'dialog stays open');
+  assert.match(text('detail-status-message'), /Could not delete the college/);
+  assert.equal(document.getElementById('graveyard-message')?.textContent ?? '', '', 'the message is not hidden behind the dialog');
+  assert.equal(deleteButton().disabled, false, 'the user can retry');
+});
+
+test('deleting one college from its dialog leaves the other, and the next dialog works', async () => {
+  const { initApp } = await loadApp();
+  reset();
+  initApp({ colleges: COLLEGES });
+  openDetail('h1');
+  deleteButton().click();
+  await settle();
+  openDetail('y2');
+  assert.equal(text('detail-college-name'), 'Yale University');
+  assert.equal(text('detail-status-message'), '', 'no old message carried over');
+  assert.equal(dialog().open, true);
+});
+
+test('a double click on the dialog Delete button sends one request', async () => {
+  const { initApp } = await loadApp();
+  reset();
+  initApp({ colleges: COLLEGES });
+  let deletes = 0;
+  globalThis.fetch = async (url, options = {}) => {
+    if ((options.method || 'GET').toUpperCase() === 'DELETE') deletes += 1;
+    return new Response(JSON.stringify({ success: true, data: {} }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+  };
+  openDetail('h1');
+  deleteButton().click();
+  deleteButton().click();
+  await settle();
+  assert.equal(deletes, 1);
+});
 test('re-running initApp replaces cards instead of duplicating them', async () => {
   const { initApp } = await loadApp();
   reset();

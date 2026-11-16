@@ -248,3 +248,112 @@ test('clicking a tombstone in the real app wiring opens the modal with that coll
   document.getElementById('detail-close-button').click();
   assert.equal(dialog().open, false, 'closes via the close button');
 });
+
+// ---------------------------------------------------------------------------
+// Delete college button (below the application status box)
+// ---------------------------------------------------------------------------
+const deleteBtn = () => document.getElementById('detail-delete-button');
+const detailDialog = () => document.getElementById('college-detail-dialog');
+const message = () => document.getElementById('detail-status-message').textContent;
+const flush = () => new Promise((resolve) => setImmediate(resolve));
+const DELETE_TARGET = { id: 'h1', name: 'Harvard University' };
+
+test('delete button: sits after the status box, is red, and is disabled without an onDelete callback', async () => {
+  const { initDetailModal, openDetailModal, closeDetailModal } = await modal();
+  initDetailModal({});
+  openDetailModal(DELETE_TARGET);
+  const status = document.querySelector('#college-detail-dialog .status-actions');
+  assert.ok(status.compareDocumentPosition(deleteBtn()) & dom.window.Node.DOCUMENT_POSITION_FOLLOWING);
+  assert.equal(deleteBtn().textContent.trim(), 'Delete college');
+  assert.equal(deleteBtn().disabled, true, 'nothing to call, so it is off');
+  const css = fs.readFileSync(path.join(FRONTEND, 'css', 'style.css'), 'utf8');
+  assert.match(/#detail-delete-button\s*\{[^}]*background:[^;]*#b81d1d/.exec(css)?.[0] ?? '', /#b81d1d/, 'a red background');
+  closeDetailModal();
+});
+
+test('delete button: gets the college name as its accessible label', async () => {
+  const { initDetailModal, openDetailModal, closeDetailModal } = await modal();
+  initDetailModal({ onDelete: async () => true });
+  openDetailModal(DELETE_TARGET);
+  assert.equal(deleteBtn().disabled, false);
+  assert.equal(deleteBtn().getAttribute('aria-label'), 'Delete Harvard University');
+  openDetailModal({ id: 'x', name: '' });
+  assert.equal(deleteBtn().getAttribute('aria-label'), 'Delete this college', 'a blank name has a fallback');
+  closeDetailModal();
+});
+
+test('delete button: passes the open college to onDelete and closes the dialog when it resolves true', async () => {
+  const { initDetailModal, openDetailModal } = await modal();
+  const seen = [];
+  initDetailModal({ onDelete: async (college) => { seen.push(college.id); return true; } });
+  openDetailModal(DELETE_TARGET);
+  deleteBtn().click();
+  await flush();
+  assert.deepEqual(seen, ['h1']);
+  assert.equal(detailDialog().open, false);
+});
+
+test('delete button: a false result (cancelled or failed) keeps the dialog open and the button usable', async () => {
+  const { initDetailModal, openDetailModal, closeDetailModal } = await modal();
+  initDetailModal({ onDelete: async () => false });
+  openDetailModal(DELETE_TARGET);
+  deleteBtn().click();
+  await flush();
+  assert.equal(detailDialog().open, true);
+  assert.equal(deleteBtn().disabled, false);
+  closeDetailModal();
+});
+
+test('delete button: a thrown error shows in the dialog, which stays open', async () => {
+  const { initDetailModal, openDetailModal, closeDetailModal } = await modal();
+  initDetailModal({ onDelete: async () => { throw new Error('server down'); } });
+  openDetailModal(DELETE_TARGET);
+  deleteBtn().click();
+  await flush();
+  assert.equal(message(), 'Could not delete: server down');
+  assert.equal(detailDialog().open, true);
+  assert.equal(deleteBtn().disabled, false, 'retry is possible');
+  closeDetailModal();
+});
+
+test('delete button: it is off while the request runs, so a second click sends nothing', async () => {
+  const { initDetailModal, openDetailModal } = await modal();
+  let calls = 0;
+  let finish;
+  initDetailModal({ onDelete: () => { calls += 1; return new Promise((resolve) => { finish = resolve; }); } });
+  openDetailModal(DELETE_TARGET);
+  deleteBtn().click();
+  assert.equal(deleteBtn().disabled, true);
+  deleteBtn().click();
+  assert.equal(calls, 1);
+  finish(true);
+  await flush();
+  assert.equal(detailDialog().open, false);
+});
+
+test('delete button: a late answer does not close the dialog if another college is open by then', async () => {
+  const { initDetailModal, openDetailModal, closeDetailModal } = await modal();
+  let finish;
+  initDetailModal({ onDelete: () => new Promise((resolve) => { finish = resolve; }) });
+  openDetailModal(DELETE_TARGET);
+  deleteBtn().click();
+  openDetailModal({ id: 'y2', name: 'Yale University' });
+  finish(true);
+  await flush();
+  assert.equal(detailDialog().open, true, 'the Yale dialog is untouched');
+  assert.equal(document.getElementById('detail-college-name').textContent, 'Yale University');
+  closeDetailModal();
+});
+
+test('delete button: an old error message is cleared when the dialog opens again', async () => {
+  const { initDetailModal, openDetailModal, closeDetailModal } = await modal();
+  initDetailModal({ onDelete: async () => { throw new Error('nope'); } });
+  openDetailModal(DELETE_TARGET);
+  deleteBtn().click();
+  await flush();
+  assert.match(message(), /nope/);
+  closeDetailModal();
+  openDetailModal(DELETE_TARGET);
+  assert.equal(message(), '');
+  closeDetailModal();
+});

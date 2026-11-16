@@ -80,22 +80,38 @@ test('fonts: nothing is loaded from another host, so the content security policy
   }
 });
 
-test('emboss: the white outline stays and a dark offset shadow is added', () => {
+test('text: there is no white outline anywhere in the stylesheet', () => {
+  assert.doesNotMatch(style, /--text-outline/, 'the outline variable is gone');
+  assert.doesNotMatch(style, /text-shadow:[^;]*#ffffff[^;]*,\s*[^;]*#ffffff/i, 'no layered white outline');
+  assert.doesNotMatch(style, /1px 0 0 #fff|-1px 0 0 #fff|0 1px 0 #fff\b/i, 'no white 1px offsets in four directions');
+  assert.match(ruleBody(style, ':root'), /--text-shadow-bright:\s*0 1px 2px rgba\(0, 0, 0, 0\.75\)/, 'bright text gets a soft dark shadow');
+});
+
+test('text: bright text uses the soft shadow and the page body adds no shadow of its own', () => {
+  assert.match(ruleBody(style, '.site-header'), /text-shadow:\s*var\(--text-shadow-bright\)/);
+  assert.match(ruleBody(style, '.back-link'), /text-shadow:\s*var\(--text-shadow-bright\)/);
+  assert.match(ruleBody(style, '.deadline-empty'), /text-shadow:\s*var\(--text-shadow-bright\)/);
+  assert.match(ruleBody(style, '.deadline-lane__days'), /text-shadow:\s*var\(--text-shadow-bright\)/);
+  assert.doesNotMatch(ruleBody(style, 'body'), /text-shadow/, 'body adds none, so nothing inherits a border');
+});
+
+test('emboss: --text-emboss lifts bright text with a light edge and a dark offset shadow, and has no white outline', () => {
   const root = ruleBody(style, ':root');
   const emboss = /--text-emboss:\s*([^;]+);/.exec(root)[1];
-  assert.match(emboss, /var\(--text-outline\)/, 'requirements 3.4 outline is kept');
+  assert.match(emboss, /0 -1px 0 rgba\(255, 255, 255, 0\.\d+\)/, 'a faint light edge above');
   assert.match(emboss, /\d+px \d+px \d+px rgba\(0, 0, 0, 0\.\d+\)/, 'a dark shadow offset down and right');
+  assert.doesNotMatch(emboss, /#fff|var\(--text-outline\)/);
 });
 
-test('emboss: title, tombstones and the deadline heading use it, and dialog titles use the parchment version', () => {
+test('emboss: title and deadline heading are bright, stones use the stone emboss, dialog titles the parchment one', () => {
   assert.match(ruleBody(style, '.site-title'), /text-shadow:\s*var\(--text-emboss\)/);
-  assert.match(ruleBody(style, '.tombstone'), /text-shadow:\s*var\(--text-emboss\)/);
   assert.match(ruleBody(style, '#deadline-page-heading'), /text-shadow:\s*var\(--text-emboss\)/);
+  assert.match(ruleBody(style, '#deadline-page-heading'), /color:\s*var\(--color-header-text\)/, 'bright, not dark, on the dark sky');
+  assert.match(ruleBody(style, '.tombstone'), /text-shadow:\s*var\(--text-emboss-stone\)/);
   assert.match(ruleBody(style, '#add-college-title'), /text-shadow:\s*var\(--text-emboss-parchment\)/);
-  const parchment = /--text-emboss-parchment:\s*([^;]+);/.exec(ruleBody(style, ':root'))[1];
-  assert.match(parchment, /rgba\(255, 255, 255/, 'a light edge');
+  const stone = /--text-emboss-stone:\s*([^;]+);/.exec(ruleBody(style, ':root'))[1];
+  assert.match(stone, /rgba\(255, 255, 255/, 'a light letterpress edge');
 });
-
 // ---------------------------------------------------------------------------
 // Task 37: parallax scenery
 // ---------------------------------------------------------------------------
@@ -493,7 +509,7 @@ test('fog: every college stone gets one hidden fog layer, and the name is unchan
   assert.equal(fog[0].getAttribute('aria-hidden'), 'true');
   assert.equal(fog[0].textContent, '');
   assert.equal(stone.textContent, 'Harvard University');
-  assert.equal(card.children.length, 2, 'still just the stone and the delete button');
+  assert.equal(card.children.length, 1, 'just the stone: delete lives in the detail dialog');
 });
 
 test('fog: a long, empty or odd name still gets exactly one fog layer', async () => {
