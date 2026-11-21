@@ -267,7 +267,8 @@ test('delete button: sits after the status box, is red, and is disabled without 
   assert.equal(deleteBtn().textContent.trim(), 'Delete college');
   assert.equal(deleteBtn().disabled, true, 'nothing to call, so it is off');
   const css = fs.readFileSync(path.join(FRONTEND, 'css', 'style.css'), 'utf8');
-  assert.match(/#detail-delete-button\s*\{[^}]*background:[^;]*#b81d1d/.exec(css)?.[0] ?? '', /#b81d1d/, 'a red background');
+  assert.match(/#detail-delete-button\s*\{[^}]*background:\s*var\(--color-danger\)/.exec(css)?.[0] ?? '', /--color-danger/, 'a red background');
+  assert.match(css, /--color-danger:\s*#c42424;/, 'the red');
   closeDetailModal();
 });
 

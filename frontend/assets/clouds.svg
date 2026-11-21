@@ -1,24 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 260" width="1200" height="260">
-  <!-- Faint clouds. Every cloud sits well inside the tile, so the tile repeats without a seam. -->
-  <defs>
-    <filter id="soft" x="-20%" y="-60%" width="140%" height="220%">
-      <feGaussianBlur stdDeviation="14"/>
-    </filter>
-  </defs>
-  <g fill="#9fb2d6" filter="url(#soft)">
-    <g opacity="0.14">
-      <ellipse cx="260" cy="90" rx="150" ry="22"/>
-      <ellipse cx="340" cy="72" rx="90" ry="20"/>
-      <ellipse cx="190" cy="102" rx="95" ry="16"/>
-    </g>
-    <g opacity="0.1">
-      <ellipse cx="690" cy="160" rx="170" ry="24"/>
-      <ellipse cx="760" cy="140" rx="100" ry="20"/>
-      <ellipse cx="610" cy="172" rx="90" ry="15"/>
-    </g>
-    <g opacity="0.12">
-      <ellipse cx="1000" cy="62" rx="110" ry="18"/>
-      <ellipse cx="1060" cy="50" rx="70" ry="15"/>
-    </g>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 65" width="1200" height="260" shape-rendering="crispEdges">
+<path fill="#7f95d6" fill-opacity="0.34" d="M149 0h11v1h-11zM147 1h2v1h-2zM160 1h1v1h-1zM141 2h6v1h-6zM161 2h1v1h-1zM61 3h10v1h-10zM139 3h2v1h-2zM162 3h1v1h-1zM59 4h2v1h-2zM71 4h2v1h-2zM138 4h1v1h-1zM163 4h3v1h-3zM57 5h2v1h-2zM73 5h2v1h-2zM137 5h1v1h-1zM166 5h2v1h-2zM50 6h5v1h-5zM56 6h1v1h-1zM75 6h1v1h-1zM136 6h1v1h-1zM168 6h1v1h-1zM47 7h3v1h-3zM55 7h1v1h-1zM76 7h1v1h-1zM135 7h1v1h-1zM169 7h1v1h-1zM46 8h1v1h-1zM77 8h1v1h-1zM133 8h2v1h-2zM253 8h5v1h-5zM44 9h2v1h-2zM78 9h1v1h-1zM132 9h1v1h-1zM170 9h1v1h-1zM250 9h3v1h-3zM258 9h3v1h-3zM43 10h1v1h-1zM79 10h3v1h-3zM131 10h1v1h-1zM248 10h2v1h-2zM261 10h2v1h-2zM42 11h1v1h-1zM82 11h2v1h-2zM247 11h1v1h-1zM263 11h2v1h-2zM84 12h1v1h-1zM130 12h1v1h-1zM239 12h8v1h-8zM265 12h1v1h-1zM41 13h1v1h-1zM85 13h1v1h-1zM237 13h2v1h-2zM39 14h2v1h-2zM86 14h1v1h-1zM235 14h2v1h-2zM266 14h1v1h-1zM37 15h2v1h-2zM234 15h1v1h-1zM267 15h3v1h-3zM36 16h1v1h-1zM87 16h1v1h-1zM126 16h5v1h-5zM170 16h5v1h-5zM270 16h2v1h-2zM35 17h1v1h-1zM233 17h1v1h-1zM272 17h2v1h-2zM34 18h1v1h-1zM232 18h1v1h-1zM230 19h2v1h-2zM274 19h1v1h-1zM33 20h1v1h-1zM228 20h2v1h-2zM275 20h1v1h-1zM227 21h1v1h-1zM226 22h1v1h-1zM276 23h1v1h-1zM225 24h1v1h-1zM28 26h6v1h-6zM87 26h6v1h-6zM220 30h6v1h-6zM275 30h6v1h-6z"/>
+<path fill="#2a3a72" fill-opacity="0.5" d="M149 1h11v1h-11zM147 2h14v1h-14zM141 3h21v1h-21zM61 4h10v1h-10zM139 4h24v1h-24zM59 5h14v1h-14zM138 5h28v1h-28zM57 6h18v1h-18zM137 6h31v1h-31zM50 7h5v1h-5zM56 7h20v1h-20zM136 7h33v1h-33zM47 8h30v1h-30zM135 8h35v1h-35zM46 9h32v1h-32zM133 9h37v1h-37zM253 9h5v1h-5zM44 10h35v1h-35zM132 10h39v1h-39zM250 10h11v1h-11zM43 11h39v1h-39zM131 11h40v2h-40zM248 11h15v1h-15zM42 12h42v1h-42zM247 12h18v1h-18zM42 13h43v1h-43zM130 13h41v1h-41zM239 13h27v1h-27zM41 14h45v1h-45zM131 14h39v3h-39zM237 14h29v1h-29zM39 15h48v1h-48zM235 15h32v1h-32zM37 16h50v1h-50zM234 16h36v1h-36zM36 17h52v1h-52zM234 17h38v1h-38zM35 18h53v1h-53zM233 18h41v1h-41zM34 19h54v2h-54zM232 19h42v1h-42zM230 20h45v1h-45zM33 21h55v3h-55zM228 21h48v1h-48zM227 22h49v1h-49zM226 23h50v1h-50zM34 24h54v1h-54zM226 24h51v1h-51zM34 25h53v2h-53zM225 25h52v1h-52zM225 26h51v3h-51zM226 29h49v2h-49z"/>
+<path fill="#9fb2ec" fill-opacity="0.34" d="M102 23h10v1h-10zM100 24h2v1h-2zM112 24h2v1h-2zM98 25h2v1h-2zM114 25h2v1h-2zM96 26h2v1h-2zM116 26h2v1h-2zM88 27h8v1h-8zM118 27h1v1h-1zM85 28h3v1h-3zM119 28h1v1h-1zM83 29h2v1h-2zM120 29h1v1h-1zM82 30h1v1h-1zM81 31h1v1h-1zM121 31h3v1h-3zM80 32h1v1h-1zM124 32h3v1h-3zM79 33h1v1h-1zM127 33h1v1h-1zM128 34h2v1h-2zM78 35h1v1h-1zM77 36h1v1h-1zM130 36h1v1h-1zM73 37h4v1h-4zM131 37h1v1h-1zM215 37h10v1h-10zM72 38h1v1h-1zM213 38h2v1h-2zM225 38h2v1h-2zM71 39h1v1h-1zM132 39h1v1h-1zM212 39h1v1h-1zM227 39h1v1h-1zM70 40h1v1h-1zM205 40h7v1h-7zM228 40h1v1h-1zM203 41h2v1h-2zM229 41h1v1h-1zM69 42h1v1h-1zM202 42h1v1h-1zM230 42h1v1h-1zM201 43h1v1h-1zM231 43h3v1h-3zM200 44h1v1h-1zM234 44h2v1h-2zM199 45h1v1h-1zM236 45h1v1h-1zM197 46h2v1h-2zM21 47h4v1h-4zM195 47h2v1h-2zM237 47h1v1h-1zM19 48h2v1h-2zM25 48h2v1h-2zM194 48h1v1h-1zM14 49h5v1h-5zM27 49h1v1h-1zM238 49h1v1h-1zM12 50h2v1h-2zM28 50h1v1h-1zM63 50h7v1h-7zM132 50h6v1h-6zM193 50h1v1h-1zM29 51h2v1h-2zM11 52h1v1h-1zM31 52h1v1h-1zM9 53h2v1h-2zM32 53h1v1h-1zM8 54h1v1h-1zM188 56h5v1h-5zM238 56h5v1h-5zM4 58h4v1h-4zM33 58h4v1h-4z"/>
+<path fill="#3a4c8c" fill-opacity="0.5" d="M102 24h10v1h-10zM100 25h14v1h-14zM98 26h18v1h-18zM96 27h22v1h-22zM88 28h31v1h-31zM85 29h35v1h-35zM83 30h38v1h-38zM82 31h39v1h-39zM81 32h43v1h-43zM80 33h47v1h-47zM79 34h49v1h-49zM79 35h51v1h-51zM78 36h52v1h-52zM77 37h54v1h-54zM73 38h59v1h-59zM215 38h10v1h-10zM72 39h60v1h-60zM213 39h14v1h-14zM71 40h62v1h-62zM212 40h16v1h-16zM70 41h63v2h-63zM205 41h24v1h-24zM203 42h27v1h-27zM69 43h64v4h-64zM202 43h29v1h-29zM201 44h33v1h-33zM200 45h36v1h-36zM199 46h38v1h-38zM69 47h63v1h-63zM197 47h40v1h-40zM21 48h4v1h-4zM70 48h62v3h-62zM195 48h43v1h-43zM19 49h8v1h-8zM194 49h44v1h-44zM14 50h14v1h-14zM194 50h45v1h-45zM12 51h17v1h-17zM193 51h46v2h-46zM12 52h19v1h-19zM11 53h21v1h-21zM193 53h45v4h-45zM9 54h24v1h-24zM8 55h25v4h-25z"/>
 </svg>

@@ -83,7 +83,8 @@ test('one lane per college: zombie matches days remaining, sunflower names the c
   const harvard = laneFor('h1');
   assert.equal(railTransform(harvard), 'translateX(87.5%)', '15 days left: 105 of 120 days elapsed');
   assert.equal(harvard.querySelector('.deadline-lane__days').textContent, '15 days remaining');
-  assert.equal(harvard.querySelector('.lane-sunflower__name').textContent, 'Harvard University');
+  assert.equal(harvard.querySelector('.lane-sign__name').textContent, 'Harvard University');
+  assert.equal(harvard.querySelector('.lane-sunflower').textContent, '', 'the sunflower shows no name');
   assert.equal(harvard.querySelector('.lane-marker--end'), null, 'no tombstone before the deadline');
 
   const yale = laneFor('y1');
@@ -102,7 +103,7 @@ test('a missing college name shows "Unnamed college" on the sunflower and in the
   const { initDeadlineTracker } = await tracker();
   initDeadlineTracker({ container: track(), colleges: [{ id: 'n1', name: '   ', deadline_date: '2026-03-25' }], today: TODAY });
   const lane = laneFor('n1');
-  assert.equal(lane.querySelector('.lane-sunflower__name').textContent, 'Unnamed college');
+  assert.equal(lane.querySelector('.lane-sign__name').textContent, 'Unnamed college');
   assert.equal(lane.querySelector('.zombie').getAttribute('aria-label'), 'Zombie heading toward Unnamed college');
 });
 
@@ -225,7 +226,7 @@ test('after Mark as completed, the completion tombstone replaces the zombie on t
 test('CSS: the rail transitions transform, not left, and reduced motion switches the transition off', () => {
   const css = fs.readFileSync(path.join(FRONTEND, 'css', 'style.css'), 'utf8');
   const rail = /\.deadline-lane__rail\s*\{[^}]*\}/.exec(css)[0];
-  assert.match(rail, /transition:\s*transform 0\.8s ease-in-out/);
+  assert.match(rail, /transition:\s*transform 0\.8s steps\(16, end\)/);
   assert.doesNotMatch(rail, /transition:[^;]*left/);
   assert.doesNotMatch(css, /\.deadline-lane__path \.lane-marker\s*\{[^}]*transition:\s*left/, 'the old left transition is gone');
   const anim = fs.readFileSync(path.join(FRONTEND, 'css', 'animations.css'), 'utf8');
@@ -243,4 +244,117 @@ test('with reduced motion, the position is still set (only the transition is off
   } finally {
     if (saved === undefined) delete globalThis.matchMedia; else globalThis.matchMedia = saved;
   }
+});
+
+// ---------------------------------------------------------------------------
+// Lane name sign: the college name is on a wooden sign at the bottom-left of the lane, not on the
+// sunflower, and its size follows the length of the name.
+// ---------------------------------------------------------------------------
+const LONG_NAME = 'Massachusetts Institute of Technology';
+
+test('sign: every lane has one sign with the college name, and the sunflower has no text but keeps its label', async () => {
+  const { initDeadlineTracker } = await tracker();
+  initDeadlineTracker({ container: track(), colleges: [HARVARD, { id: 'm1', name: LONG_NAME, deadline_date: '2026-04-01' }], today: TODAY });
+  for (const [id, name] of [['h1', 'Harvard University'], ['m1', LONG_NAME]]) {
+    const lane = laneFor(id);
+    const signs = lane.querySelectorAll('.lane-sign');
+    assert.equal(signs.length, 1, `${id} has one sign`);
+    assert.equal(signs[0].querySelector('.lane-sign__name').textContent, name);
+    const flower = lane.querySelector('.lane-sunflower');
+    assert.equal(flower.textContent, '');
+    assert.equal(flower.children.length, 0);
+    assert.equal(flower.getAttribute('aria-label'), `Finish line: ${name}`, 'screen readers still hear the name');
+  }
+});
+
+test('sign: it sits in the lane strip before the path, so it is at the left end and the zombie starts after it', async () => {
+  const { initDeadlineTracker } = await tracker();
+  initDeadlineTracker({ container: track(), colleges: [HARVARD], today: TODAY });
+  const strip = laneFor('h1').querySelector('.deadline-lane__strip');
+  assert.deepEqual([...strip.children].map((c) => c.className.split(' ')[0]), ['lane-sign', 'deadline-lane__path', 'deadline-lane__end']);
+  const css = fs.readFileSync(path.join(FRONTEND, 'css', 'style.css'), 'utf8');
+  const sign = /\.lane-sign\s*\{([^}]*)\}/.exec(css)[1];
+  assert.match(sign, /position:\s*absolute/);
+  assert.match(sign, /left:\s*0\.5rem/);
+  assert.match(sign, /bottom:\s*0\.25rem/);
+  assert.match(sign, /width:\s*8\.5rem/);
+  assert.match(sign, /pointer-events:\s*none/);
+  assert.match(/\.deadline-lane__path\s*\{([^}]*)\}/.exec(css)[1], /margin:\s*0 9\.5rem 0 9\.5rem/, 'the path starts after the sign');
+  assert.doesNotMatch(css, /lane-sunflower__name/, 'the old name-on-sunflower rule is gone');
+});
+
+test('sign: the sign stays when the deadline passes or the lane is completed', async () => {
+  const { initDeadlineTracker } = await tracker();
+  const passed = { id: 'p1', name: 'Past U', deadline_date: '2026-03-01' };
+  const done = { id: 'd1', name: 'Done U', deadline_date: '2026-04-01', status: 'submitted', submitted_at: '2026-03-05' };
+  initDeadlineTracker({ container: track(), colleges: [passed, done], today: TODAY });
+  assert.equal(laneFor('p1').querySelector('.lane-sign__name').textContent, 'Past U');
+  assert.equal(laneFor('d1').querySelector('.lane-sign__name').textContent, 'Done U');
+});
+
+test('sign: names are text, never markup', async () => {
+  const { buildLaneSign } = await tracker();
+  const sign = buildLaneSign('<img src=x onerror=alert(1)> U');
+  assert.equal(sign.querySelector('img'), null);
+  assert.equal(sign.querySelector('.lane-sign__name').textContent, '<img src=x onerror=alert(1)> U');
+});
+
+test('sign size: short names stay on one line at the full size', async () => {
+  const { laneSignLayout, SIGN_FONT_MAX_REM } = await tracker();
+  for (const name of ['MIT', 'Yale', 'Duke', 'Rice University'.slice(0, 4)]) {
+    assert.deepEqual(laneSignLayout(name), { fontSizeRem: SIGN_FONT_MAX_REM, lines: 1 }, name);
+  }
+});
+
+test('sign size: longer names get smaller and wrap, and size never grows as the name grows', async () => {
+  const { laneSignLayout } = await tracker();
+  const names = ['Yale', 'Princeton', 'Harvard University', 'Rensselaer Polytechnic Institute', LONG_NAME, 'Pennsylvania State University-Main Campus'];
+  const sizes = names.map((n) => laneSignLayout(n).fontSizeRem);
+  for (let i = 1; i < sizes.length; i += 1) assert.ok(sizes[i] <= sizes[i - 1], `${names[i]} (${sizes[i]}) is not bigger than ${names[i - 1]} (${sizes[i - 1]})`);
+  assert.equal(laneSignLayout('Harvard University').lines, 2, 'two words go on two lines rather than shrinking');
+  assert.equal(laneSignLayout(LONG_NAME).lines, 3);
+  assert.ok(laneSignLayout(LONG_NAME).fontSizeRem >= 0.7, 'a typical long name stays readable');
+});
+
+test('sign size: the estimate always fits the sign width, and sizes are on a 0.05rem step', async () => {
+  const { laneSignLayout, SIGN_TEXT_WIDTH_REM, SIGN_FONT_MIN_REM, SIGN_MAX_LINES } = await tracker();
+  const names = ['A', 'MIT', 'Harvard University', LONG_NAME, 'University of California-Los Angeles', 'Texas A & M University-College Station', 'Saint Mary-of-the-Woods College', 'The University of Texas Rio Grande Valley'];
+  for (const name of names) {
+    const { fontSizeRem, lines } = laneSignLayout(name);
+    assert.ok(lines >= 1 && lines <= SIGN_MAX_LINES, `${name}: ${lines} lines`);
+    assert.ok(fontSizeRem >= SIGN_FONT_MIN_REM, `${name}: at least the minimum`);
+    assert.equal(Math.round(fontSizeRem * 20), fontSizeRem * 20, `${name}: ${fontSizeRem} is on a 0.05 step`);
+    // The longest line at this size, estimated the same generous way, fits the text width.
+    const words = name.split(/\s+/);
+    const longestWord = Math.max(...words.map((w) => w.length));
+    if (fontSizeRem > SIGN_FONT_MIN_REM) assert.ok(longestWord * 0.62 * fontSizeRem <= SIGN_TEXT_WIDTH_REM + 1e-9, `${name}: its longest word fits`);
+  }
+});
+
+test('sign size: edge cases (blank, spaces, one very long word, an extremely long name)', async () => {
+  const { laneSignLayout, buildLaneSign, SIGN_FONT_MAX_REM, SIGN_FONT_MIN_REM } = await tracker();
+  assert.deepEqual(laneSignLayout(''), { fontSizeRem: SIGN_FONT_MAX_REM, lines: 1 });
+  assert.deepEqual(laneSignLayout('   '), { fontSizeRem: SIGN_FONT_MAX_REM, lines: 1 });
+  assert.deepEqual(laneSignLayout(null), { fontSizeRem: SIGN_FONT_MAX_REM, lines: 1 });
+  assert.deepEqual(laneSignLayout('  Yale   University  '), laneSignLayout('Yale University'), 'extra spaces are ignored');
+  const oneWord = laneSignLayout('Supercalifragilisticexpialidocious');
+  assert.equal(oneWord.lines, 1, 'a single word cannot be split between words');
+  assert.equal(oneWord.fontSizeRem, SIGN_FONT_MIN_REM, 'it shrinks to the minimum (CSS then breaks it inside the word)');
+  const huge = laneSignLayout('The University of Texas Rio Grande Valley School of Medicine and Health Sciences');
+  assert.equal(huge.fontSizeRem, SIGN_FONT_MIN_REM, 'never smaller than the minimum');
+  assert.equal(buildLaneSign('Yale').querySelector('.lane-sign__name').style.fontSize, '1.1rem', 'the size is applied');
+  assert.equal(buildLaneSign(LONG_NAME).dataset.lines, '3');
+});
+
+test('sign: a very long name is capped at four visible lines, with the full name kept in the title', async () => {
+  const { buildLaneSign, SIGN_VISIBLE_LINES } = await tracker();
+  const name = 'The University of Texas Rio Grande Valley School of Medicine and Health Sciences';
+  const sign = buildLaneSign(name);
+  assert.equal(sign.title, name);
+  assert.equal(sign.querySelector('.lane-sign__board .lane-sign__name').textContent, name, 'the text is complete in the DOM');
+  const css = fs.readFileSync(path.join(FRONTEND, 'css', 'style.css'), 'utf8');
+  const rule = /\.lane-sign__name\s*\{([^}]*)\}/.exec(css)[1];
+  assert.match(rule, new RegExp(`-webkit-line-clamp:\\s*${SIGN_VISIBLE_LINES};`));
+  assert.match(rule, /overflow:\s*hidden/);
+  assert.match(/\.lane-sign__board\s*\{([^}]*)\}/.exec(css)[1], /lane-sign\.svg/, 'the board carries the sprite');
 });

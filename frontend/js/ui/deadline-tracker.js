@@ -100,7 +100,7 @@ export function prefersReducedMotion() {
 }
 
 /**
- * Builds the zombie element from plain spans. Its look is set in style.css.
+ * Builds the zombie element. It is one element: the pixel sprite is its background image (style.css).
  * @param {string} name College name, used in the zombie's accessible label.
  * @returns {HTMLDivElement} The zombie, with class zombie--walking and role="img".
  */
@@ -108,32 +108,89 @@ export function buildZombie(name) {
   const zombie = make('div', 'zombie zombie--walking lane-marker');
   zombie.setAttribute('role', 'img');
   zombie.setAttribute('aria-label', `Zombie heading toward ${name}`);
-
-  const head = make('span', 'zombie__head');
-  head.append(
-    make('span', 'zombie__hair'),
-    make('span', 'zombie__eye zombie__eye--left'),
-    make('span', 'zombie__eye zombie__eye--right'),
-    make('span', 'zombie__mouth'),
-  );
-
-  zombie.append(
-    make('span', 'zombie__arm zombie__arm--back'),
-    make('span', 'zombie__leg zombie__leg--back'),
-    make('span', 'zombie__torso'),
-    make('span', 'zombie__arm zombie__arm--front'),
-    make('span', 'zombie__leg zombie__leg--front'),
-    head,
-  );
   return zombie;
 }
-
+// The sunflower carries no text. The college name is on the lane sign, and screen readers still
+// hear it from the label.
 function buildSunflower(name) {
   const flower = make('div', 'lane-sunflower');
   flower.setAttribute('role', 'img');
   flower.setAttribute('aria-label', `Finish line: ${name}`);
-  flower.append(make('span', 'lane-sunflower__name', name));
   return flower;
+}
+
+/** Width of the text area on the lane sign, in rem. Matches .lane-sign__name in style.css. */
+export const SIGN_TEXT_WIDTH_REM = 6;
+/** Largest and smallest font size for the name on the sign, in rem. */
+export const SIGN_FONT_MAX_REM = 1.1;
+export const SIGN_FONT_MIN_REM = 0.6;
+/** The most lines the size calculation plans for. */
+export const SIGN_MAX_LINES = 3;
+/** The most lines the sign shows (style.css). A longer name ends in an ellipsis, and the full
+    name is in the sign's title and the lane's label. */
+export const SIGN_VISIBLE_LINES = 4;
+// Average width of one Pixelify Sans bold character, as a share of the font size. Kept a little
+// generous so the estimate never overflows the sign.
+const CHAR_WIDTH_EM = 0.62;
+// A size below this on fewer lines is worse than wrapping onto one more line.
+const SIGN_FONT_PREFERRED_REM = 0.75;
+
+// The shortest possible longest-line length when the words are split into at most `lines` lines.
+function longestLine(words, lines) {
+  const total = words.join(' ').length;
+  const longestWord = Math.max(...words.map((w) => w.length));
+  for (let width = Math.max(longestWord, Math.ceil(total / lines)); width <= total; width += 1) {
+    let used = 1;
+    let current = 0;
+    for (const word of words) {
+      const next = current === 0 ? word.length : current + 1 + word.length;
+      if (next <= width) current = next;
+      else { used += 1; current = word.length; }
+    }
+    if (used <= lines) return width;
+  }
+  return total;
+}
+
+/**
+ * Picks the font size and line count for a college name on the lane sign. Short names stay on
+ * one line at full size. Longer names shrink, then wrap onto balanced lines, so the text always
+ * fits the sign and stays at least SIGN_FONT_MIN_REM.
+ * @param {string} name
+ * @returns {{fontSizeRem: number, lines: number}}
+ */
+export function laneSignLayout(name) {
+  const words = String(name ?? '').trim().split(/\s+/).filter(Boolean);
+  if (words.length === 0) return { fontSizeRem: SIGN_FONT_MAX_REM, lines: 1 };
+  const sizeFor = (chars) => Math.min(SIGN_FONT_MAX_REM, SIGN_TEXT_WIDTH_REM / (CHAR_WIDTH_EM * chars));
+  let best = null;
+  for (let lines = 1; lines <= Math.min(SIGN_MAX_LINES, words.length); lines += 1) {
+    const size = sizeFor(longestLine(words, lines));
+    if (!best || size > best.size + 1e-9) best = { size, lines };
+    if (size >= SIGN_FONT_PREFERRED_REM) { best = { size, lines }; break; }
+  }
+  // Round down to 0.05rem, so the rounding can never make the text wider than estimated.
+  const fontSizeRem = Math.max(SIGN_FONT_MIN_REM, Math.floor(best.size * 20) / 20);
+  return { fontSizeRem, lines: best.lines };
+}
+
+/**
+ * Builds the wooden sign at the bottom-left of a lane that carries the college name.
+ * @param {string} name
+ * @returns {HTMLDivElement}
+ */
+export function buildLaneSign(name) {
+  const sign = make('div', 'lane-sign');
+  const board = make('div', 'lane-sign__board');
+  const text = make('span', 'lane-sign__name', name);
+  const { fontSizeRem, lines } = laneSignLayout(name);
+  text.style.fontSize = `${fontSizeRem}rem`;
+  sign.dataset.lines = String(lines);
+  // The sign shows at most SIGN_VISIBLE_LINES lines. The title holds the full name for hover.
+  sign.title = name;
+  board.append(text);
+  sign.append(board);
+  return sign;
 }
 
 function buildCompletionTombstone(dateText) {
@@ -253,7 +310,7 @@ function renderLane(college, settings) {
   const rail = make('div', RAIL_CLASS);
   rail.append(walker);
   path.append(rail, days);
-  strip.append(path, end);
+  strip.append(buildLaneSign(name), path, end);
 
   const message = make('p', 'deadline-lane__message');
   message.setAttribute('role', 'status');

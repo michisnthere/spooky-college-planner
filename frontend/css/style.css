@@ -1,17 +1,35 @@
 /* ==========================================================================
-   Spooky College Planner: base styles and night graveyard theme
-   Keyframes live in animations.css. Only the tombstone hover lift uses transform.
+   Spooky College Planner: pixel-art night graveyard
+   Everything sits on a 4 px grid (--px). Edges are hard: no blur, no rounded corners, no soft
+   gradients. Sprites are SVG files drawn by scripts/make-pixel-assets.js and shown with
+   image-rendering: pixelated. Keyframes live in animations.css.
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
    0. Fonts (self-hosted, so the content security policy stays on 'self')
-   Fraunces for headers and larger text. Plus Jakarta Sans for body and smaller text.
-   Both are variable fonts, so one file covers every weight.
+   Silkscreen: title, buttons and small labels. Pixelify Sans: headings, tombstone names and
+   dialog titles. Plus Jakarta Sans: body text, forms and details.
    -------------------------------------------------------------------------- */
 @font-face {
-  font-family: "Fraunces";
-  src: url("../fonts/fraunces-latin-wght-normal.woff2") format("woff2");
-  font-weight: 100 900;
+  font-family: "Silkscreen";
+  src: url("../fonts/silkscreen-latin-400-normal.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Silkscreen";
+  src: url("../fonts/silkscreen-latin-700-normal.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Pixelify Sans";
+  src: url("../fonts/pixelify-sans-latin-wght-normal.woff2") format("woff2");
+  font-weight: 400 700;
   font-style: normal;
   font-display: swap;
 }
@@ -28,68 +46,73 @@
    1. Variables
    -------------------------------------------------------------------------- */
 :root {
-  /* Night sky above the graveyard (dark blue-black, no purple) */
-  --color-sky-top: #04060d;
-  --color-sky-mid: #0a1020;
-  --color-sky-bottom: #16203a;
+  /* The pixel grid: one art pixel is 4 CSS px. */
+  --px: 4px;
 
-  /* Header: dark purple with orange highlights */
-  --color-header-top: #3e1a5c;
-  --color-header-bottom: #1d0a2e;
-  --color-header-text: #ffe7bf;
+  /* Night palette: navy, charcoal, indigo, purple */
+  --color-navy-900: #04060d;
+  --color-navy-800: #070c1a;
+  --color-navy-700: #0b1430;
+  --color-navy-600: #101c3c;
+  --color-charcoal: #2e323e;
+  --color-indigo-700: #141a4a;
+  --color-indigo-600: #1f2a66;
+  --color-purple-700: #1d0a2e;
+  --color-purple-600: #3e1a5c;
 
-  /* Orange accents for buttons and highlights */
+  /* Environment blues and teals, and muted lavender */
+  --color-royal: #2f4fd0;
+  --color-electric: #2557e6;
+  --color-cyan: #4de1ff;
+  --color-teal: #2bb5a8;
+  --color-lavender: #c9b8f0;
+
+  /* Interactive accents */
+  --color-yellow: #ffd23f;
+  --color-magenta: #e83fb0;
+
+  /* Orange and red stay for now (header, highlights, Delete button) */
   --color-accent: #ff8c1a;
   --color-accent-strong: #d4600a;
-  --color-accent-glow: rgba(255, 140, 26, 0.55);
+  --color-header-text: #ffe7bf;
+  --color-danger: #c42424;
+  --color-danger-edge: #5c0a0a;
 
-  /* Muted gray-green stone tones */
-  --color-stone-light: #8e9d90;
-  --color-stone-mid: #69796c;
-  --color-stone-dark: #47564a;
+  /* Stone, grass */
   --color-stone-edge: #2b352c;
-
-  /* Grass ground under the tombstones */
   --color-grass-light: #8fd06a;
-  --color-grass-top: #5c9a3c;
   --color-grass-mid: #3f7a2a;
-  --color-grass-bottom: #2a5a1c;
-  --color-blade-light: rgba(175, 228, 120, 0.3);
-  --color-blade-dark: rgba(8, 34, 6, 0.35);
   --ground-height: 5.5rem;
 
-  /* Parchment surfaces for header and dialogs */
-  --color-parchment: #f3e9d2;
-  --color-parchment-deep: #ead9b4;
-  --color-parchment-field: #fffaf0;
-  --color-parchment-edge: #b8985e;
-  --color-ink: #2e1140;
-  --color-ink-soft: #55356d;
-  --color-link: #8a3d00;
-
-  /* Text */
+  /* Text. The ink colours are light because every surface that holds buttons and fields is dark. */
   --color-text-dark: #120818;
-  /* No white outline. Bright text gets a soft dark shadow for contrast against the night sky. */
-  --text-shadow-bright: 0 1px 2px rgba(0, 0, 0, 0.75);
+  --color-text-light: #f3e9d2;
+  --color-ink: #f3e9d2;
+  --color-ink-soft: #c9b8f0;
+  --color-link: #ffd23f;
+  --color-parchment-field: #0b1030;
+  --color-parchment-edge: #7d8cf0;
+  --color-parchment-deep: #1f2a66;
 
-  /* Embossed type. Bright text on the dark sky is lifted by a light top edge and a dark offset shadow.
-     Dark text on stone is pressed in with a light edge below and a dark edge above.
-     Dialogs on parchment use the same press-in look. */
-  --text-emboss: 0 -1px 0 rgba(255, 255, 255, 0.3),
-    1px 2px 1px rgba(0, 0, 0, 0.65),
-    2px 4px 5px rgba(0, 0, 0, 0.35);
+  /* Hard-edged text shadows: offsets only, no blur. */
+  --text-shadow-bright: 2px 2px 0 #05080f;
+  --text-emboss: 0 -2px 0 rgba(255, 255, 255, 0.28),
+    2px 2px 0 #05080f,
+    4px 4px 0 rgba(5, 8, 15, 0.45);
   --text-emboss-stone: 0 1px 0 rgba(255, 255, 255, 0.55),
-    0 -1px 0 rgba(0, 0, 0, 0.35);
-  --text-emboss-parchment: 0 1px 0 rgba(255, 255, 255, 0.9),
-    0 -1px 0 rgba(46, 17, 64, 0.4),
-    1px 2px 2px rgba(46, 17, 64, 0.25);
+    0 -1px 0 rgba(0, 0, 0, 0.3);
+  --text-emboss-dialog: 2px 2px 0 #05081a,
+    0 -2px 0 rgba(255, 255, 255, 0.2);
 
-  /* Shadows and fonts */
-  --shadow-drop: 0 12px 16px rgba(0, 0, 0, 0.6);
-  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+  /* Hard drop shadow for boxes */
+  --shadow-drop: 8px 8px 0 rgba(3, 5, 15, 0.7);
+
+  /* Fonts */
+  --font-pixel-small: "Silkscreen", "Courier New", monospace;
+  --font-pixel-heading: "Pixelify Sans", "Courier New", monospace;
   --font-body: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 
-  /* Night scenery (parallax layers). The layers reach this far below the screen so they can move up. */
+  /* The scenery layers reach this far below the screen, so they can move up. */
   --scenery-overscan: 8rem;
 }
 
@@ -103,9 +126,10 @@
 }
 
 html {
-  background: var(--color-sky-top);
+  background: var(--color-navy-900);
 }
 
+/* The sky is eight flat bands, like a classic pixel-art sky. */
 body {
   margin: 0;
   min-height: 100vh;
@@ -113,7 +137,11 @@ body {
   flex-direction: column;
   font-family: var(--font-body);
   color: var(--color-text-dark);
-  background: linear-gradient(to bottom, var(--color-sky-top), var(--color-sky-mid) 60%, var(--color-sky-bottom));
+  background: linear-gradient(
+    to bottom,
+    #04060d 0 12.5%, #060a16 12.5% 25%, #080e1f 25% 37.5%, #0a1228 37.5% 50%,
+    #0c1630 50% 62.5%, #0f1a38 62.5% 75%, #121f40 75% 87.5%, #162448 87.5% 100%
+  );
   background-attachment: fixed;
 }
 
@@ -122,16 +150,25 @@ input {
   font: inherit;
 }
 
-/* Headers and larger text use the display font. */
+[hidden] {
+  display: none !important;
+}
+
+:focus-visible {
+  outline: var(--px) solid var(--color-yellow);
+  outline-offset: var(--px);
+}
+
+/* Headers and larger text use the pixel heading font. */
 h1,
 h2,
 h3,
 h4 {
-  font-family: var(--font-display);
+  font-family: var(--font-pixel-heading);
 }
 
-/* Decorative section divider, ready for any <hr> added later. Victorian cemetery gate in
-   charcoal. A faint light edge keeps it visible on the dark sky. */
+/* Decorative section divider, ready for any <hr> added later: a Victorian cemetery gate in
+   charcoal, drawn on the pixel grid. A hard light copy below it keeps it visible on the dark sky. */
 hr {
   display: block;
   width: min(94%, 60rem);
@@ -140,17 +177,9 @@ hr {
   padding: 0;
   border: 0;
   background: url("../assets/gate-divider.svg") center / auto 100% repeat-x;
-  filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.45));
+  image-rendering: pixelated;
+  filter: drop-shadow(0 var(--px) 0 rgba(170, 180, 230, 0.4));
   overflow: hidden;
-}
-
-[hidden] {
-  display: none !important;
-}
-
-:focus-visible {
-  outline: 3px solid var(--color-accent);
-  outline-offset: 3px;
 }
 
 .visually-hidden,
@@ -167,8 +196,7 @@ hr {
 }
 
 /* --------------------------------------------------------------------------
-   3. Header (dark purple band with orange highlights)
-   Sits on a dark background, so its bright text gets a soft dark shadow.
+   3. Header: dark purple in flat bands, with an orange edge
    -------------------------------------------------------------------------- */
 .site-header {
   position: relative;
@@ -177,25 +205,27 @@ hr {
   text-align: center;
   color: var(--color-header-text);
   text-shadow: var(--text-shadow-bright);
-  background: linear-gradient(to bottom, var(--color-header-top), var(--color-header-bottom));
-  border-bottom: 4px solid var(--color-accent);
+  background: linear-gradient(to bottom, #3e1a5c 0 50%, #351650 50% 78%, #2a1040 78% 100%);
+  border-bottom: var(--px) solid var(--color-accent);
   box-shadow:
-    inset 0 1px 0 rgba(255, 140, 26, 0.55),
-    inset 0 -6px 12px -8px rgba(255, 140, 26, 0.5),
-    0 6px 14px rgba(0, 0, 0, 0.5);
+    inset 0 var(--px) 0 rgba(255, 140, 26, 0.45),
+    0 var(--px) 0 #120620;
 }
 
 .site-title,
 .site-header .site-title {
   margin: 0;
+  font-family: var(--font-pixel-small);
   font-size: 2.25rem;
+  font-weight: 700;
   letter-spacing: 0.04em;
+  text-transform: uppercase;
   color: var(--color-accent);
   text-shadow: var(--text-emboss);
 }
 
 .site-tagline {
-  margin: 0.35rem 0 0;
+  margin: 0.6rem 0 0;
   font-style: italic;
   letter-spacing: 0.02em;
   color: var(--color-header-text);
@@ -203,8 +233,10 @@ hr {
 
 .back-link {
   display: inline-block;
-  margin-top: 0.6rem;
-  font-weight: bold;
+  margin-top: 0.7rem;
+  font-family: var(--font-pixel-small);
+  font-weight: 700;
+  letter-spacing: 0.04em;
   color: #ffb35c;
   text-shadow: var(--text-shadow-bright);
 }
@@ -228,8 +260,8 @@ hr {
 
 /* --------------------------------------------------------------------------
    4b. Night scenery: fixed layers behind the page (parallax.js moves them)
-   From far to near: moon, clouds, hills, trees and grave markers, then a strip of mist.
-   Decoration only: hidden from screen readers, and clicks pass through.
+   From far to near: moon, clouds, hills, then trees, fence, gate, bushes and grave markers, and a
+   strip of mist. Decoration only: hidden from screen readers, and clicks pass through.
    -------------------------------------------------------------------------- */
 .scenery {
   position: fixed;
@@ -237,6 +269,7 @@ hr {
   z-index: 0;
   overflow: hidden;
   pointer-events: none;
+  image-rendering: pixelated;
 }
 
 /* Layers reach below the screen by --scenery-overscan, so they can move up without a gap. */
@@ -247,6 +280,7 @@ hr {
   width: 100%;
   bottom: calc(-1 * var(--scenery-overscan));
   will-change: transform;
+  image-rendering: pixelated;
 }
 
 /* The tiled layers are one tile wider than the screen, so parallax.js can wrap them sideways. */
@@ -273,65 +307,33 @@ hr {
   background: url("../assets/trees.svg") left bottom / 1400px 380px repeat-x;
 }
 
-/* Moon: a CSS disc in the sky, top right. ::before draws the lit surface and glow.
-   ::after draws the craters. */
+/* Moon: a pixel sprite. The disc has craters, and the glow is three hard rings. */
 .scenery__moon {
   position: absolute;
-  top: 10rem;
-  right: 2.5rem;
-  width: 4.5rem;
-  height: 4.5rem;
+  top: calc(10rem - 40px);
+  right: calc(2.5rem - 40px);
+  width: 160px;
+  height: 160px;
+  background: url("../assets/moon.svg") center / 100% 100% no-repeat;
+  image-rendering: pixelated;
 }
 
-.scenery__moon::before,
-.scenery__moon::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-}
-
-.scenery__moon::before {
-  background:
-    radial-gradient(circle at 30% 28%, rgba(255, 255, 255, 0.7) 0 10%, transparent 26%),
-    radial-gradient(circle at 60% 65%, rgba(190, 165, 110, 0.25) 0 30%, transparent 55%),
-    radial-gradient(circle at 35% 35%, #fffbea 0%, #f4e6bd 55%, #d8c188 100%);
-  box-shadow:
-    inset -6px -8px 14px rgba(130, 100, 45, 0.35),
-    0 0 14px 4px rgba(255, 240, 200, 0.4),
-    0 0 40px 14px rgba(255, 236, 190, 0.26),
-    0 0 90px 30px rgba(170, 200, 255, 0.14);
-}
-
-/* Craters: each is a radial gradient, darker in the middle with a lighter rim, so it reads as a pit. */
-.scenery__moon::after {
-  background:
-    radial-gradient(circle 0.6rem at 3.1rem 3.0rem, rgba(110, 85, 45, 0.45) 0 0.35rem, rgba(255, 250, 235, 0.55) 0.5rem, transparent 0.6rem),
-    radial-gradient(circle 0.45rem at 1.35rem 1.45rem, rgba(110, 85, 45, 0.45) 0 0.25rem, rgba(255, 250, 235, 0.55) 0.36rem, transparent 0.45rem),
-    radial-gradient(circle 0.4rem at 2.9rem 1.05rem, rgba(110, 85, 45, 0.42) 0 0.2rem, rgba(255, 250, 235, 0.5) 0.31rem, transparent 0.4rem),
-    radial-gradient(circle 0.3rem at 0.95rem 3.2rem, rgba(110, 85, 45, 0.42) 0 0.15rem, rgba(255, 250, 235, 0.5) 0.23rem, transparent 0.3rem),
-    radial-gradient(circle 0.35rem at 2.2rem 3.7rem, rgba(110, 85, 45, 0.4) 0 0.17rem, rgba(255, 250, 235, 0.5) 0.27rem, transparent 0.35rem);
-}
-
-/* Shared mist along the base of the graveyard, behind the stones. It drifts sideways (animations.css). */
+/* Shared mist along the base of the graveyard, behind the stones. It drifts in whole-pixel steps
+   (animations.css). */
 .scenery__fog {
   position: absolute;
   left: -20%;
   right: -20%;
   bottom: calc(var(--ground-height) - 1.5rem);
   height: 8rem;
-  background:
-    radial-gradient(ellipse 22% 55% at 15% 70%, rgba(205, 220, 240, 0.34), transparent 75%),
-    radial-gradient(ellipse 26% 60% at 42% 80%, rgba(205, 220, 240, 0.3), transparent 75%),
-    radial-gradient(ellipse 24% 50% at 70% 65%, rgba(205, 220, 240, 0.32), transparent 75%),
-    radial-gradient(ellipse 20% 55% at 92% 78%, rgba(205, 220, 240, 0.28), transparent 75%),
-    linear-gradient(to top, rgba(190, 208, 232, 0.22), transparent 80%);
-  filter: blur(14px);
+  background: url("../assets/mist-strip.svg") left bottom / auto 128px repeat-x;
+  image-rendering: pixelated;
 }
+
 /* --------------------------------------------------------------------------
    5. Graveyard scene
-   Horizontal flex row that always scrolls sideways. The sky and ground are
-   background layers, so they stay in place while the tombstones scroll.
+   Horizontal flex row that always scrolls sideways. The grass and path are a tiled pixel sprite
+   on the container, so they stay in place while the tombstones scroll.
    -------------------------------------------------------------------------- */
 .graveyard,
 #graveyard {
@@ -345,16 +347,13 @@ hr {
   padding: 2.5rem 1.5rem var(--ground-height);
   overflow-x: auto;
   overflow-y: hidden;
-  /* Only grass is painted here. The night sky comes from the body
-     background, so it shows above the grass and behind the tombstones. */
-  background-image:
-    linear-gradient(to bottom, var(--color-grass-light) 0 3px, transparent 3px),
-    repeating-linear-gradient(80deg, var(--color-blade-light) 0 1px, transparent 1px 7px),
-    repeating-linear-gradient(100deg, var(--color-blade-dark) 0 1px, transparent 1px 11px),
-    linear-gradient(to bottom, var(--color-grass-top) 0%, var(--color-grass-mid) 45%, var(--color-grass-bottom) 100%);
-  background-size: 100% var(--ground-height);
+  /* Only the ground is painted here. The night sky comes from the body, so it shows above the
+     grass and behind the tombstones. */
+  background-image: url("../assets/ground.svg");
+  background-repeat: repeat-x;
   background-position: left bottom;
-  background-repeat: no-repeat;
+  background-size: auto var(--ground-height);
+  image-rendering: pixelated;
 }
 
 .college-tombstones,
@@ -379,7 +378,7 @@ hr {
   flex: 0 0 auto;
 }
 
-/* College card: stone button with a delete button under it. */
+/* College card: the stone button. */
 .college-tombstone {
   position: relative;
   display: flex;
@@ -389,12 +388,12 @@ hr {
   flex: 0 0 auto;
 }
 
-
 /* --------------------------------------------------------------------------
    6. Tombstones
-   Base stone: layered gradients, borders, inset and drop shadows.
-   ::before draws a carved rim. ::after draws weathering spots and cracks.
-   isolation keeps both pseudo-elements behind the text.
+   Each stone is a pixel sprite (an SVG drawn by the asset script) stretched as a nine-slice, so the
+   corners and the outline keep their size while the middle grows with the name.
+   ::before is the sprite and ::after is the wear (cracks, chips, moss). isolation keeps both
+   behind the text.
    -------------------------------------------------------------------------- */
 .tombstone {
   position: relative;
@@ -405,27 +404,17 @@ hr {
   align-items: center;
   justify-content: center;
   width: 9.5rem;
-  min-height: 12rem;
+  min-height: 13rem;
   margin: 0;
-  padding: 2.25rem 0.9rem 1rem;
-  border: 3px solid var(--color-stone-edge);
-  border-radius: 0.5rem 0.5rem 0.25rem 0.25rem;
-  background-color: var(--color-stone-mid);
-  background-image:
-    linear-gradient(105deg, rgba(255, 255, 255, 0.14) 0%, transparent 38%, rgba(0, 0, 0, 0.2) 75%, transparent 100%),
-    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.06) 0 2px, transparent 2px 8px),
-    linear-gradient(to bottom, var(--color-stone-light) 0%, var(--color-stone-mid) 55%, var(--color-stone-dark) 100%);
-  box-shadow:
-    inset 0 3px 0 rgba(255, 255, 255, 0.18),
-    inset 0 -12px 18px rgba(0, 0, 0, 0.35),
-    inset 8px 0 10px -6px rgba(0, 0, 0, 0.45),
-    inset -8px 0 10px -6px rgba(0, 0, 0, 0.45),
-    var(--shadow-drop);
+  padding: 2.25rem 1rem 1.5rem;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
   color: var(--color-text-dark);
-  font-family: var(--font-display);
+  font-family: var(--font-pixel-heading);
   font-size: 0.95rem;
   font-weight: 700;
-  line-height: 1.25;
+  line-height: 1.2;
   text-align: center;
   text-decoration: none;
   text-shadow: var(--text-emboss-stone);
@@ -434,11 +423,38 @@ hr {
   cursor: pointer;
   appearance: none;
   -webkit-appearance: none;
-  transition: transform 0.2s ease-out;
+  image-rendering: pixelated;
+  transition: transform 0.2s steps(2, end);
+}
+
+/* The stone sprite. A hard shadow under the stone comes from the filter, with no blur. */
+.tombstone::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  border-style: solid;
+  border-color: transparent;
+  border-width: 76px 76px 64px;
+  border-image: url("../assets/stone-rounded.svg") 76 76 64 fill / 76px 76px 64px stretch;
+  image-rendering: pixelated;
+  filter: drop-shadow(8px 8px 0 rgba(3, 5, 15, 0.55));
+}
+
+/* Wear: cracks, chips and moss over the stone. */
+.tombstone::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: url("../assets/stone-wear.svg") center bottom / 152px 208px no-repeat;
+  image-rendering: pixelated;
 }
 
 /* Mist over the base of a stone. It is wider than the stone, so it spills past the edges, and it
-   drifts sideways (animations.css). The pointer passes through it. */
+   drifts in whole-pixel steps (animations.css). The pointer passes through it. */
 .tombstone__fog {
   position: absolute;
   left: -25%;
@@ -446,115 +462,99 @@ hr {
   bottom: -1rem;
   z-index: 3;
   height: 4.5rem;
-  background:
-    radial-gradient(ellipse 40% 60% at 20% 70%, rgba(214, 226, 242, 0.5), transparent 72%),
-    radial-gradient(ellipse 45% 55% at 62% 82%, rgba(214, 226, 242, 0.46), transparent 72%),
-    radial-gradient(ellipse 35% 50% at 90% 60%, rgba(214, 226, 242, 0.38), transparent 72%),
-    radial-gradient(ellipse 50% 100% at 50% 100%, rgba(200, 214, 232, 0.42), transparent 85%);
-  filter: blur(7px);
+  background: url("../assets/mist.svg") left bottom / auto 72px repeat-x;
+  image-rendering: pixelated;
   pointer-events: none;
-}
-
-/* Carved rim */
-.tombstone::before {
-  content: "";
-  position: absolute;
-  inset: 0.55rem;
-  border: 1px solid rgba(20, 10, 25, 0.35);
-  border-radius: inherit;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
-  pointer-events: none;
-  z-index: -1;
-}
-
-/* Weathering: spots, a chip, and a crack */
-.tombstone::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background-image:
-    radial-gradient(circle at 18% 72%, rgba(0, 0, 0, 0.22) 0 2px, transparent 3px),
-    radial-gradient(circle at 80% 84%, rgba(0, 0, 0, 0.18) 0 3px, transparent 4px),
-    radial-gradient(circle at 70% 22%, rgba(255, 255, 255, 0.12) 0 2px, transparent 3px),
-    linear-gradient(160deg, transparent 46%, rgba(0, 0, 0, 0.25) 47%, transparent 49%),
-    linear-gradient(20deg, transparent 62%, rgba(0, 0, 0, 0.2) 63%, transparent 65%);
-  pointer-events: none;
-  z-index: -1;
 }
 
 .tombstone:hover,
 .tombstone:focus-visible {
-  transform: translateY(-6px);
+  transform: translateY(-8px);
 }
 
-/* Shapes. Each one is a single element with a modifier class. */
+/* Shapes. Each one is a single element with a modifier class, and each has its own sprite. */
 
-/* Rounded top: semicircle over a square base. Used by the two special tombstones. */
+/* Rounded top: the sprite above is the default. Used by every college and the two special stones. */
 .tombstone--rounded {
-  border-radius: 4.75rem 4.75rem 0.4rem 0.4rem;
   min-height: 13rem;
 }
 
-/* Pointed top: clip-path cuts a point and angled shoulders. */
+/* Pointed top */
 .tombstone--pointed {
-  border-width: 0;
-  border-radius: 0;
   min-height: 13.5rem;
   padding-top: 3.2rem;
-  clip-path: polygon(50% 0, 100% 20%, 100% 100%, 0 100%, 0 20%);
 }
 
-/* Cross: the crossbar carries the name. The arms are cut by clip-path. */
+.tombstone--pointed::before {
+  border: 0;
+  border-image: none;
+  background: url("../assets/stone-pointed.svg") center / 100% 100% no-repeat;
+}
+
+.tombstone--pointed::after,
+.tombstone--cross::after,
+.tombstone--arched::after,
+.tombstone--slab::after {
+  display: none;
+}
+
+/* Cross: the crossbar carries the name. */
 .tombstone--cross {
   width: 11rem;
   min-height: 14rem;
-  border-width: 0;
-  border-radius: 0;
   justify-content: flex-start;
   padding: 3.9rem 0.75rem 0;
-  clip-path: polygon(
-    36% 0, 64% 0, 64% 28%, 100% 28%, 100% 52%, 64% 52%,
-    64% 100%, 36% 100%, 36% 52%, 0 52%, 0 28%, 36% 28%
-  );
 }
 
 .tombstone--cross::before {
-  display: none;
+  border: 0;
+  border-image: none;
+  background: url("../assets/stone-cross.svg") center / 100% 100% no-repeat;
 }
 
 /* Slab: flat, thick, squared-off top. */
 .tombstone--slab {
   width: 10.5rem;
   min-height: 9.5rem;
-  border-width: 4px;
-  border-radius: 0.35rem 0.35rem 0.15rem 0.15rem;
   padding-top: 1.5rem;
 }
 
-/* Arched: flatter elliptical top. */
-.tombstone--arched {
-  min-height: 11.5rem;
-  border-radius: 4.75rem 4.75rem 0.25rem 0.25rem / 2.5rem 2.5rem 0.25rem 0.25rem;
+.tombstone--slab::before {
+  border-width: 24px;
+  border-image: url("../assets/stone-slab.svg") 24 fill / 24px stretch;
 }
 
-/* Special tombstones: Add College and Deadline Tracker */
+/* Arched: flatter top. */
+.tombstone--arched {
+  min-height: 11.5rem;
+}
+
+.tombstone--arched::before {
+  border: 0;
+  border-image: none;
+  background: url("../assets/stone-arched.svg") center / 100% 100% no-repeat;
+}
+
+/* Special tombstones: Add College (orange edge) and Deadline Tracker (purple edge) */
 .tombstone--special {
   min-height: 13rem;
 }
 
-.tombstone--add,
-#add-college-button {
-  border-color: var(--color-accent-strong);
+.tombstone--add::before,
+#add-college-button::before {
+  border-image-source: url("../assets/stone-rounded-add.svg");
 }
 
-.tombstone--deadline,
-#deadline-tracker-link {
-  border-color: #5a2d82;
+.tombstone--deadline::before,
+#deadline-tracker-link::before {
+  border-image-source: url("../assets/stone-rounded-deadline.svg");
 }
 
 /* --------------------------------------------------------------------------
-   7. Dialogs (parchment surface, readable backdrop, no outline)
+   7. Dialogs: retro dialogue boxes
+   A dark indigo panel with a pale pixel border, a royal-blue inner frame and a hard drop shadow.
+   The ink and field colours in :root are light on dark, so the form, the list and the detail view
+   share one scheme.
    -------------------------------------------------------------------------- */
 #add-college-dialog,
 #college-detail-dialog,
@@ -568,19 +568,18 @@ hr {
   margin: auto;
   padding: 1.5rem 1.6rem;
   overflow-y: auto;
-  border: 3px solid var(--color-parchment-edge);
-  border-radius: 0.9rem;
-  background: linear-gradient(to bottom, #fbf4e1, var(--color-parchment) 70%, var(--color-parchment-deep));
+  border: var(--px) solid #e9e4ff;
+  border-radius: 0;
+  background: var(--color-indigo-700);
   color: var(--color-ink);
   text-shadow: none;
   box-shadow:
-    0 18px 40px rgba(0, 0, 0, 0.6),
-    inset 0 0 0 4px rgba(255, 255, 255, 0.35),
-    inset 0 0 40px rgba(120, 80, 30, 0.18);
+    inset 0 0 0 var(--px) var(--color-royal),
+    var(--shadow-drop);
 }
 
 dialog::backdrop {
-  background: rgba(7, 2, 14, 0.78);
+  background: rgba(3, 5, 15, 0.82);
 }
 
 .dialog-title,
@@ -588,9 +587,11 @@ dialog::backdrop {
 #detail-college-name,
 #deadline-page-heading {
   margin: 0 0 1rem;
-  font-size: 1.5rem;
+  font-family: var(--font-pixel-heading);
+  font-size: 1.6rem;
+  font-weight: 700;
   color: var(--color-ink);
-  text-shadow: var(--text-emboss-parchment);
+  text-shadow: var(--text-emboss-dialog);
 }
 
 /* The deadline page sits on the dark sky, so its heading is bright and embossed. */
@@ -616,7 +617,7 @@ dialog::backdrop {
 
 .form-field label,
 .detail-deadline-edit label {
-  font-weight: bold;
+  font-weight: 700;
   font-size: 0.95rem;
   color: var(--color-ink);
 }
@@ -631,18 +632,19 @@ dialog::backdrop {
 #detail-deadline-input {
   width: 100%;
   padding: 0.55rem 0.65rem;
-  border: 2px solid var(--color-parchment-edge);
-  border-radius: 0.4rem;
+  border: var(--px) solid var(--color-parchment-edge);
+  border-radius: 0;
   background: var(--color-parchment-field);
   color: var(--color-ink);
   text-shadow: none;
+  color-scheme: dark;
 }
 
 .form-field input:focus,
 .detail-deadline-edit input:focus {
-  outline: none;
-  border-color: var(--color-accent-strong);
-  box-shadow: 0 0 0 3px var(--color-accent-glow);
+  outline: var(--px) solid var(--color-yellow);
+  outline-offset: 0;
+  border-color: var(--color-yellow);
 }
 
 .college-suggestions,
@@ -652,8 +654,8 @@ dialog::backdrop {
   list-style: none;
   max-height: 9rem;
   overflow-y: auto;
-  border: 2px solid var(--color-parchment-edge);
-  border-radius: 0.4rem;
+  border: var(--px) solid var(--color-parchment-edge);
+  border-radius: 0;
   background: var(--color-parchment-field);
 }
 
@@ -664,14 +666,15 @@ dialog::backdrop {
 }
 
 .college-suggestions li:hover {
-  background: var(--color-parchment-deep);
+  background: var(--color-electric);
+  color: #ffffff;
 }
 
 .form-message,
 #add-college-message {
   margin: 0;
   min-height: 1.3em;
-  font-weight: bold;
+  font-weight: 700;
   color: var(--color-link);
   text-shadow: none;
 }
@@ -684,7 +687,8 @@ dialog::backdrop {
   padding-right: 2.4rem;
 }
 
-/* Loading spinner for the college lookup. The hidden attribute hides it, so no display rule here. */
+/* Loading spinner for the college lookup: a square frame that turns in quarter steps. The hidden
+   attribute hides it, so no display rule here. */
 .search-spinner {
   position: absolute;
   right: 0.75rem;
@@ -692,9 +696,9 @@ dialog::backdrop {
   width: 1rem;
   height: 1rem;
   margin-top: -0.5rem;
-  border: 2px solid var(--color-parchment-edge);
-  border-top-color: var(--color-accent-strong);
-  border-radius: 50%;
+  border: var(--px) solid var(--color-lavender);
+  border-top-color: var(--color-yellow);
+  border-radius: 0;
 }
 
 .form-actions {
@@ -705,38 +709,65 @@ dialog::backdrop {
   margin-top: 0.25rem;
 }
 
-/* Buttons */
+/* --------------------------------------------------------------------------
+   7b. Buttons
+   Five visibly different states: default (raised), hover (electric blue), focus (yellow frame),
+   active (pressed down, no shadow) and disabled (flat and dim).
+   -------------------------------------------------------------------------- */
 .btn {
-  padding: 0.55rem 1.1rem;
-  border: 2px solid var(--color-ink);
-  border-radius: 0.45rem;
+  padding: 0.6rem 1rem;
+  border: var(--px) solid var(--color-ink);
+  border-radius: 0;
   background: var(--color-parchment-field);
   color: var(--color-ink);
-  font-weight: bold;
+  font-family: var(--font-pixel-small);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
   text-shadow: none;
   cursor: pointer;
-  transition: background-color 0.15s ease;
+  box-shadow:
+    inset 0 calc(-1 * var(--px)) 0 rgba(0, 0, 0, 0.45),
+    0 var(--px) 0 #03050f;
 }
 
-.btn:hover {
-  background: var(--color-parchment-deep);
+.btn:hover:not(:disabled) {
+  background: var(--color-electric);
+  color: #ffffff;
+  border-color: #ffffff;
+}
+
+.btn:focus-visible {
+  outline: var(--px) solid var(--color-yellow);
+  outline-offset: var(--px);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(var(--px));
+  box-shadow: inset 0 var(--px) 0 rgba(0, 0, 0, 0.45);
 }
 
 .btn:disabled {
-  opacity: 0.6;
+  background: #1b2040;
+  color: #8a93c8;
+  border-color: #4a5280;
+  box-shadow: none;
   cursor: not-allowed;
 }
 
+/* Submit stays orange. */
 .btn--submit,
 #add-college-submit {
-  background: linear-gradient(to bottom, #ffab4a, var(--color-accent) 50%, var(--color-accent-strong));
-  border-color: var(--color-accent-strong);
+  background: var(--color-accent);
+  border-color: #7a3300;
   color: var(--color-text-dark);
 }
 
-.btn--submit:hover,
-#add-college-submit:hover {
-  background: linear-gradient(to bottom, #ffbd6e, #ffa033 50%, #e06e14);
+.btn--submit:hover:not(:disabled),
+#add-college-submit:hover:not(:disabled) {
+  background: #ffa94d;
+  color: var(--color-text-dark);
+  border-color: #ffffff;
 }
 
 .btn--cancel,
@@ -749,7 +780,9 @@ dialog::backdrop {
   padding: 0.4rem 0.8rem;
 }
 
-/* Detail dialog */
+/* --------------------------------------------------------------------------
+   7c. Detail dialog
+   -------------------------------------------------------------------------- */
 .detail-header {
   display: flex;
   justify-content: space-between;
@@ -769,7 +802,7 @@ dialog::backdrop {
 }
 
 .detail-list dt {
-  font-weight: bold;
+  font-weight: 700;
   color: var(--color-ink-soft);
 }
 
@@ -784,7 +817,7 @@ dialog::backdrop {
 }
 
 #detail-days-remaining {
-  font-weight: bold;
+  font-weight: 700;
   color: var(--color-link);
 }
 
@@ -798,21 +831,68 @@ dialog::backdrop {
 .status-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 0.75rem 0.5rem;
   margin: 0;
   padding: 0.75rem;
-  border: 2px dashed var(--color-parchment-edge);
-  border-radius: 0.5rem;
+  border: var(--px) solid var(--color-royal);
+  border-radius: 0;
 }
 
 .status-actions legend {
   padding: 0 0.3rem;
-  font-weight: bold;
+  font-family: var(--font-pixel-small);
+  font-weight: 700;
   color: var(--color-ink);
 }
 
 .btn--status {
   min-width: 6.5rem;
+}
+
+/* Delete button in the detail dialog: red, alone below the status box. */
+.detail-danger {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+}
+
+.btn--delete,
+#detail-delete-button {
+  background: var(--color-danger);
+  border-color: var(--color-danger-edge);
+  color: #ffffff;
+}
+
+.btn--delete:hover:not(:disabled),
+#detail-delete-button:hover:not(:disabled) {
+  background: #9c1818;
+  color: #ffffff;
+  border-color: #ffffff;
+}
+
+/* The button for the saved application status is pressed: pixel yellow. */
+.btn--status[aria-pressed="true"] {
+  background: var(--color-yellow);
+  border-color: #7a5a00;
+  color: var(--color-text-dark);
+}
+
+/* Missing-info dialog: lists what the lookup could not find, with one input per item. */
+.missing-info-summary {
+  margin: 0 0 0.5rem;
+  line-height: 1.45;
+}
+
+#missing-info-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.form-field input[aria-invalid="true"] {
+  border-color: #ff5a5a;
+  outline: var(--px) solid #ff5a5a;
+  outline-offset: 0;
 }
 
 /* --------------------------------------------------------------------------
@@ -834,9 +914,11 @@ dialog::backdrop {
   padding: 1rem;
   overflow-x: auto;
   overflow-y: hidden;
-  border-bottom: 4px solid var(--color-accent);
-  border-radius: 0.5rem;
-  background: linear-gradient(to right, rgba(20, 8, 35, 0.6), rgba(60, 25, 90, 0.6));
+  border: var(--px) solid #5b2d8a;
+  border-bottom: var(--px) solid var(--color-accent);
+  border-radius: 0;
+  background: rgba(24, 10, 44, 0.88);
+  box-shadow: var(--shadow-drop);
 }
 
 /* --------------------------------------------------------------------------
@@ -850,7 +932,7 @@ dialog::backdrop {
 
   .site-title,
   .site-header .site-title {
-    font-size: 1.7rem;
+    font-size: 1.4rem;
   }
 
   .graveyard,
@@ -871,7 +953,7 @@ dialog::backdrop {
   }
 
   .tombstone {
-    font-size: 0.85rem;
+    font-size: 0.9rem;
   }
 
   .deadline-page {
@@ -922,44 +1004,17 @@ dialog::backdrop {
   }
 }
 
-/* Delete button in the detail dialog: red, alone below the status box. */
-.detail-danger {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 0.5rem;
-}
-
-.btn--delete,
-#detail-delete-button {
-  background: linear-gradient(to bottom, #e04545, #b81d1d 55%, #8f1212);
-  border-color: #5c0a0a;
-  color: #ffffff;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.6);
-}
-
-.btn--delete:hover:not(:disabled),
-#detail-delete-button:hover:not(:disabled) {
-  background: linear-gradient(to bottom, #f05a5a, #cc2222 55%, #a01414);
-}
-
-/* Detail dialog: the button for the saved application status is pressed. */
-.btn--status[aria-pressed="true"] {
-  background: var(--color-parchment-deep);
-  box-shadow: inset 0 0 0 2px var(--color-ink);
-  font-weight: 800;
-}
-
 /* --------------------------------------------------------------------------
-   10. Deadline lanes (Task 15): Plants vs. Zombies lawn, one lane per college
+   10. Deadline lanes: a pixel-art Plants vs. Zombies lawn, one lane per college
    Zombie left, sunflower or tombstone at the right end, days label between.
-   Bright text on the dark sky uses a soft dark shadow (--text-shadow-bright).
+   Bright text on the dark sky uses a hard shadow (--text-shadow-bright).
    -------------------------------------------------------------------------- */
 .deadline-empty {
   margin: 0;
   padding: 1rem;
   text-align: center;
-  font-weight: bold;
-  letter-spacing: 0.02em;
+  font-family: var(--font-pixel-small);
+  font-weight: 700;
   color: var(--color-header-text);
   text-shadow: var(--text-shadow-bright);
 }
@@ -971,12 +1026,7 @@ dialog::backdrop {
 .deadline-lane__header {
   display: flex;
   justify-content: flex-end;
-  margin-bottom: 0.35rem;
-}
-
-.deadline-lane__complete:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+  margin-bottom: 0.5rem;
 }
 
 .deadline-lane__strip {
@@ -984,23 +1034,83 @@ dialog::backdrop {
   display: flex;
   height: 8.5rem;
   overflow: hidden;
-  border: 3px solid #1f3d14;
-  border-radius: 0.5rem;
-  background:
-    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.07) 0 40px, transparent 40px 80px),
-    linear-gradient(to bottom, var(--color-grass-light) 0%, var(--color-grass-top) 35%, var(--color-grass-mid) 100%);
-  box-shadow: inset 0 -8px 0 rgba(0, 0, 0, 0.18), 0 4px 8px rgba(0, 0, 0, 0.4);
+  border: var(--px) solid #1f3d14;
+  border-radius: 0;
+  background: url("../assets/lawn.svg") left top / 64px 64px repeat;
+  image-rendering: pixelated;
+  box-shadow: inset 0 -8px 0 rgba(0, 0, 0, 0.18), 0 var(--px) 0 rgba(0, 0, 0, 0.5);
 }
 
-/* Walking path. The right margin reserves room for the sunflower or tombstone. */
+/* Walking path. The left margin leaves room for the name sign, and the right margin for the
+   sunflower or tombstone, so the zombie never covers either. */
 .deadline-lane__path {
   position: relative;
   flex: 1 1 auto;
-  margin: 0 9.5rem 0 0.5rem;
+  margin: 0 9.5rem 0 9.5rem;
+}
+
+/* Name sign: a wooden board on a post, standing in the grass at the bottom-left of the lane.
+   The board is a nine-slice sprite, so it grows with the name while its corners keep their size.
+   deadline-tracker.js sets the font size from the length of the name (laneSignLayout). */
+.lane-sign {
+  position: absolute;
+  z-index: 1;
+  left: 0.5rem;
+  bottom: 0.25rem;
+  width: 8.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+}
+
+.lane-sign__board {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* 8.5rem sign - two 16px border slices - this padding leaves about 6.2rem for text.
+     SIGN_TEXT_WIDTH_REM in deadline-tracker.js assumes 6rem, to leave a margin. */
+  padding: 0.1rem 0.15rem;
+  border-style: solid;
+  border-color: transparent;
+  border-width: 16px;
+  border-image: url("../assets/lane-sign.svg") 16 fill / 16px stretch;
+  image-rendering: pixelated;
+}
+
+/* At most four lines (SIGN_VISIBLE_LINES). Longer names end in an ellipsis, so the sign always
+   fits the lane, including the shorter mobile lane. */
+.lane-sign__name {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+  overflow: hidden;
+  max-width: 100%;
+  font-family: var(--font-pixel-heading);
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1.1;
+  text-align: center;
+  color: #fff3d6;
+  text-shadow: 1px 1px 0 #2a1608;
+  overflow-wrap: anywhere;
+}
+/* The post under the board. */
+.lane-sign::after {
+  content: "";
+  display: block;
+  width: 16px;
+  height: 32px;
+  margin-top: -4px;
+  background: url("../assets/lane-sign-post.svg") center / 100% 100% no-repeat;
+  image-rendering: pixelated;
 }
 
 /* The rail is as wide as the path. JS sets transform: translateX(N%) on it, which moves the
-   walker N% of the path. Only transform changes, so the move stays on the compositor. */
+   walker N% of the path. Only transform changes, so the move stays on the compositor. The move
+   is made in 16 whole steps, like frames of a pixel animation. */
 .deadline-lane__rail {
   position: absolute;
   left: 0;
@@ -1009,9 +1119,10 @@ dialog::backdrop {
   height: 6.5rem;
   pointer-events: none;
   transform: translateX(0);
-  transition: transform 0.8s ease-in-out;
+  transition: transform 0.8s steps(16, end);
   will-change: transform;
 }
+
 .deadline-lane__rail .lane-marker {
   position: absolute;
   left: 0;
@@ -1022,13 +1133,18 @@ dialog::backdrop {
 /* Days label, centered between the walker and the lane end. JS sets its left. */
 .deadline-lane__days {
   position: absolute;
+  z-index: 2;
   top: 0.35rem;
   transform: translateX(-50%);
   white-space: nowrap;
+  font-family: var(--font-pixel-heading);
   font-weight: 700;
+  font-size: 0.95rem;
+  padding: 0.1rem 0.5rem;
+  background: #05080f;
   color: #ffffff;
-  text-shadow: var(--text-shadow-bright);
-  transition: left 0.8s ease-in-out;
+  text-shadow: none;
+  transition: left 0.8s steps(16, end);
 }
 
 .deadline-lane__end {
@@ -1042,203 +1158,59 @@ dialog::backdrop {
 }
 
 .deadline-lane__message {
-  margin: 0.3rem 0 0;
+  margin: 0.4rem 0 0;
   min-height: 1.3em;
   text-align: right;
-  font-weight: bold;
+  font-weight: 700;
   color: #ffffff;
   text-shadow: var(--text-shadow-bright);
 }
 
-/* Zombie: body parts are absolute inside a 4rem x 6.2rem box. */
+/* Zombie: one pixel sprite, 16 x 25 art pixels, drawn facing right. */
 .zombie {
   position: absolute;
   width: 4rem;
-  height: 6.2rem;
+  height: 6.25rem;
+  background: url("../assets/zombie.svg") center bottom / 100% 100% no-repeat;
+  image-rendering: pixelated;
 }
 
-.zombie__head,
-.zombie__torso,
-.zombie__arm,
-.zombie__leg,
-.zombie__hair,
-.zombie__eye,
-.zombie__mouth {
-  position: absolute;
-  display: block;
-  box-sizing: border-box;
-}
-
-.zombie__head {
-  left: 1rem;
-  top: 0;
-  width: 2rem;
-  height: 2rem;
-  border: 2px solid #1d2a17;
-  border-radius: 50%;
-  background: radial-gradient(circle at 38% 32%, #c8e6a4, #86b06c 55%, #4d6b3d);
-}
-
-.zombie__hair {
-  left: 0.1rem;
-  top: -0.35rem;
-  width: 1.6rem;
-  height: 0.8rem;
-  border-radius: 50% 50% 0 0;
-  background: #2e2a22;
-}
-
-.zombie__eye {
-  top: 0.5rem;
-  width: 0.5rem;
-  height: 0.5rem;
-  border: 1px solid #1d2a17;
-  border-radius: 50%;
-  background: #fff3b0;
-}
-
-.zombie__eye--left {
-  left: 0.25rem;
-}
-
-.zombie__eye--right {
-  left: 0.95rem;
-}
-
-.zombie__eye::after {
-  content: "";
-  position: absolute;
-  left: 0.12rem;
-  top: 0.12rem;
-  width: 0.2rem;
-  height: 0.2rem;
-  border-radius: 50%;
-  background: #b1122b;
-}
-
-.zombie__mouth {
-  left: 0.45rem;
-  top: 1.2rem;
-  width: 0.9rem;
-  height: 0.35rem;
-  border-radius: 0 0 0.5rem 0.5rem;
-  background: #3a0a0a;
-}
-
-.zombie__torso {
-  left: 0.7rem;
-  top: 2rem;
-  width: 2.6rem;
-  height: 2.2rem;
-  border: 2px solid #17242f;
-  border-radius: 0.4rem 0.4rem 0.2rem 0.2rem;
-  background: linear-gradient(#56789a, #2e4a63);
-}
-
-/* Torn shirt shows exposed skin. */
-.zombie__torso::after {
-  content: "";
-  position: absolute;
-  left: 1.4rem;
-  top: 0.4rem;
-  width: 0.5rem;
-  height: 0.9rem;
-  border-radius: 0 0 0.3rem 0.3rem;
-  background: #7fa86a;
-}
-
-.zombie__arm {
-  width: 0.8rem;
-  height: 1.9rem;
-  border: 2px solid #1d2a17;
-  border-radius: 0.35rem;
-  background: #86b06c;
-}
-
-.zombie__arm--back {
-  left: 0.2rem;
-  top: 2.4rem;
-  transform: rotate(12deg);
-  transform-origin: top center;
-}
-
-.zombie__arm--front {
-  left: 2.6rem;
-  top: 2.4rem;
-  width: 1.5rem;
-  height: 0.7rem;
-  border-radius: 0 0.4rem 0.4rem 0;
-}
-
-.zombie__leg {
-  top: 4.2rem;
-  width: 0.95rem;
-  height: 2rem;
-  border: 2px solid #1a2218;
-  border-radius: 0 0 0.3rem 0.3rem;
-  background: #3d4a3c;
-}
-
-.zombie__leg--back {
-  left: 0.9rem;
-}
-
-.zombie__leg--front {
-  left: 2rem;
-}
-
-.zombie__leg::after {
-  content: "";
-  position: absolute;
-  left: -0.2rem;
-  bottom: -0.2rem;
-  width: 1.3rem;
-  height: 0.5rem;
-  border-radius: 0.25rem;
-  background: #1b1b1b;
-}
-
-/* Sunflower end marker. The disc holds the college name. Petals come from a conic gradient. */
+/* Sunflower end marker: a 30 x 30 sprite. It shows no text: the name is on the lane sign. */
 .lane-sunflower {
   position: relative;
   width: 7.5rem;
   height: 7.5rem;
   display: grid;
   place-items: center;
-  border-radius: 50%;
-  background:
-    radial-gradient(circle closest-side, #6b3f00 0 70%, transparent 72%),
-    repeating-conic-gradient(#ffd21f 0deg 18deg, #ffb000 18deg 36deg, transparent 36deg 45deg);
-  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5));
+  background: url("../assets/sunflower.svg") center / 100% 100% no-repeat;
+  image-rendering: pixelated;
 }
 
-.lane-sunflower__name {
-  width: 5rem;
-  max-height: 3.2rem;
-  overflow: hidden;
-  text-align: center;
-  font-size: 0.7rem;
-  font-weight: 700;
-  line-height: 1.1;
-  color: #ffffff;
-  text-shadow: var(--text-shadow-bright);
-  overflow-wrap: anywhere;
-}
 
 /* Tombstones that replace the sunflower and that mark completion. */
 .deadline-lane__end .lane-marker--end {
   width: 7.5rem;
   min-height: 6rem;
-  padding: 1.6rem 0.4rem 0.5rem;
-  font-size: 0.72rem;
+  padding: 1.6rem 0.7rem 0.8rem;
+  font-size: 0.8rem;
   font-weight: 700;
 }
 
 .deadline-lane__path .lane-marker--completed {
-  width: 5.5rem;
+  width: 6.5rem;
   min-height: 6.5rem;
-  padding: 2rem 0.4rem 0.6rem;
+  padding: 1.7rem 0.6rem 1rem;
   font-size: 0.7rem;
+}
+
+/* The small markers use the small stone sprite, and carry no wear. */
+.lane-marker--completed::before {
+  border-width: 32px;
+  border-image: url("../assets/stone-mini.svg") 32 fill / 32px stretch;
+}
+
+.lane-marker--completed::after {
+  display: none;
 }
 
 @media (max-width: 768px) {
@@ -1252,45 +1224,31 @@ dialog::backdrop {
 }
 
 /* --------------------------------------------------------------------------
-   11. Submitted state (Task 21): checkmark on the stone and the zombie that
-   falls on the card when the application is submitted.
+   11. Submitted state: checkmark on the stone and the zombie that falls on the card when the
+   application is submitted.
    -------------------------------------------------------------------------- */
-.tombstone--submitted {
-  border-color: #7fbf5a;
+.tombstone--submitted::before {
+  border-image-source: url("../assets/stone-rounded-submitted.svg");
 }
 
 .tombstone__check {
   position: absolute;
-  top: 0.45rem;
-  right: 0.55rem;
+  top: 0.9rem;
+  right: 1rem;
   z-index: 2;
+  font-family: var(--font-pixel-heading);
   font-size: 1.25rem;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 1;
-  color: #b8f08a;
-  text-shadow: var(--text-shadow-bright);
+  color: #123a08;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
   pointer-events: none;
 }
 
-/* Zombie on a graveyard card. Sits above the stone and its delete button. */
+/* Zombie on a graveyard card. Sits above the stone. */
 .tombstone-zombie {
   left: calc(50% - 2rem);
   bottom: 0.5rem;
   z-index: 2;
   pointer-events: none;
-}
-
-/* Missing-info dialog: lists what the lookup could not find, with one input per item. */
-.missing-info-summary {
-  margin: 0 0 0.5rem;
-  line-height: 1.45;
-}
-#missing-info-fields {
-  display: flex;
-  flex-direction: column;
-  gap: 0.9rem;
-}
-.form-field input[aria-invalid="true"] {
-  border-color: #8a1c1c;
-  box-shadow: 0 0 0 2px rgba(138, 28, 28, 0.25);
 }

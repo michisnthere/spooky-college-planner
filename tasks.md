@@ -49,7 +49,11 @@ Each task lists its steps and verification checks as plain bullets. Only the top
     { "wave": 36, "tasks": ["36"] },
     { "wave": 37, "tasks": ["37", "38", "39", "40"] },
     { "wave": 38, "tasks": ["41"] },
-    { "wave": 39, "tasks": ["42"] }
+    { "wave": 39, "tasks": ["42"] },
+    { "wave": 40, "tasks": ["43"] },
+    { "wave": 41, "tasks": ["44", "45", "46", "47"] },
+    { "wave": 42, "tasks": ["48"] },
+    { "wave": 43, "tasks": ["49"] }
   ]
 }
 ```
@@ -524,6 +528,80 @@ Refer to requirements.md section 3.5 and design.md section 3.4. Every task keeps
     4. Update the tests that clicked the card's Delete button.
   - Verification:
     - Cards have no Delete button. Delete from the dialog removes the college on the server and the page, survives a refresh, and a failed delete leaves the college in place with an error in the dialog.
+## Pixel-Art Redesign
+
+Refer to requirements.md section 3.6 and design.md section 3.6. Decisions: pixel art replaces the blurred gradients, glow and soft shadows. Silkscreen and Pixelify Sans are the pixel fonts, Plus Jakarta Sans stays for body text. Orange and red stay for now. The Plants vs. Zombies lawn stays, drawn in pixel art. All art sits on a 4 px grid with no blur and no smoothing. Every new animation is disabled under reduced motion.
+
+- [x] 43. Pixel Foundation: Fonts, Grid, Palette & Asset Tool
+  - Description: Add the pixel fonts, the pixel unit and palette variables, hard-edged text shadows, and a small tool that draws pixel-art SVG files from code.
+  - Steps:
+    1. Self-host Silkscreen and Pixelify Sans (woff2) in frontend/fonts/ and declare them with @font-face. Remove Fraunces from the CSS and delete its font file.
+    2. Set --font-pixel-small (Silkscreen), --font-pixel-heading (Pixelify Sans) and keep --font-body. Apply them to the title, buttons and labels, headings, tombstone names and dialog titles.
+    3. Add --px: 4px and the palette variables (navy, charcoal, indigo, purple, royal blue, electric blue, cyan, teal, lavender, pixel yellow, magenta). Keep the orange and red.
+    4. Replace blurred text shadows with hard-edged offset shadows.
+    5. Add scripts/make-pixel-assets.js, which draws indexed-colour pixel grids and writes SVG files with shape-rendering="crispEdges" into frontend/assets/.
+  - Verification:
+    - The fonts load from the same origin with no CSP errors. No text uses a blurred shadow. The tool regenerates the assets identically each run.
+
+- [x] 44. Pixel Night Environment
+  - Description: Redraw the scenery as pixel art: moon, clouds, twisted trees, cemetery fence and ornamental gate, hills, graveyard silhouettes, a stone path, grass, bushes and plants.
+  - Steps:
+    1. Draw each layer with the asset tool. The moon has visible craters and a glow of hard rings.
+    2. Replace the CSS grass gradient with a pixel grass tile and add the path, bushes and plants along the ground.
+    3. Keep the layers behind the content with pointer-events: none. Round parallax movement to whole pixel-grid steps so layers do not shimmer.
+    4. Show the sky, moon, clouds and hills on the deadline page too.
+  - Verification:
+    - Every listed element is visible on the homepage. Layers move in 4 px steps. Clicks pass through the scenery.
+
+- [x] 45. Pixel Tombstones, Mist & Wobble
+  - Description: Redraw tombstones in pixel art, replace the blurred fog with hard-edged pixel mist, and give the wobble a stepped feel.
+  - Steps:
+    1. Draw the rounded stone with a stepped outline, flat shading, highlights, and pixel cracks and moss. Keep the other four shape classes available in the same style.
+    2. Keep the Add College and Deadline Tracker stones distinct (orange and purple edges).
+    3. Replace the fog blur with stepped, dithered bands. The drift and the shared mist strip move in whole pixel steps (steps() timing).
+    4. Give the rumble and reveal steps() timing. Keep the tilt within 2 degrees.
+    5. Keep college names readable on the stone.
+  - Verification:
+    - No blur or soft gradient remains on stones or mist. Names are readable. Hover and tap still rumble. Reduced motion stops all of it.
+
+- [x] 46. Retro Interface: Buttons, Dialogs, Header & Dividers
+  - Description: Give controls, dialogs and messages a retro RPG look with pixel borders and hard shadows.
+  - Steps:
+    1. Build pixel borders from stacked hard box-shadows. Restyle the header, buttons, form fields, status buttons and the red Delete button.
+    2. Give buttons distinct default, hover, focus (visible), active and disabled states.
+    3. Restyle the dialogs as retro dialogue boxes and the form messages as notification boxes. Keep every behaviour.
+    4. Redraw the gate divider as pixel art in #2E323E.
+  - Verification:
+    - Each button state is visibly different. Text and controls reach 4.5:1 contrast. Dialog behaviour and tests are unchanged.
+
+- [x] 47. Pixel Plants vs. Zombies Lawn
+  - Description: Redraw the deadline page lanes in pixel art, keeping the Plants vs. Zombies theme.
+  - Steps:
+    1. Draw the zombie, the sunflower and the tombstone markers as pixel sprites. Draw the lawn lane with a checkered pixel grass pattern.
+    2. Keep the zombie walking by transform on its rail, the defeat animation and the dirt burst, all in stepped motion.
+    3. Keep the college name on the sunflower and the days label between the zombie and the sunflower, readable.
+  - Verification:
+    - The lanes, zombie and sunflower look like the rest of the app. Zombie position, defeat and the completed tombstone behave as before.
+
+- [x] 48. Pixel-Art Tests & Review
+  - Description: Check the redesign automatically and with screenshots.
+  - Steps:
+    1. Add at least 5 tests: no blur or soft shadows in the CSS, fonts declared and applied, assets exist and use crispEdges, palette contrast of 4.5:1 for the main text and button pairs, every new animation in the reduced-motion list, and the steps() timing on the drifting layers.
+    2. Update the existing tests that assumed Fraunces, blur, gradients or the old shadows.
+    3. Take screenshots of the homepage, a detail view, the add-college dialog and the deadline page (desktop and 375px) for review, and check the console for errors.
+  - Verification:
+    - The full test suite passes and the screenshots are ready for the owner to review.
+
+- [x] 49. College Name on a Lane Sign
+  - Description: Move the college name from the sunflower to a pixel-art wooden sign at the bottom-left of each deadline lane, with the text size based on the length of the name.
+  - Steps:
+    1. Draw the sign board (nine-slice) and post with the asset tool.
+    2. Add laneSignLayout(name) and buildLaneSign(name) to deadline-tracker.js. Remove the name from the sunflower but keep its accessible label.
+    3. Reserve the left end of the lane for the sign, so the zombie starts after it. Cap the sign at four lines, with the full name in its title.
+    4. Test the sizing rules and edge cases, and measure the signs in Chrome at desktop and 375px for overflow and overlap.
+  - Verification:
+    - Names from 3 to 80 characters fit on the sign at both widths, with no overflow and no overlap with the zombie. The sunflower shows no text.
+
 ## Notes
 
 - Estimated timeline: 15 to 21 hours of development.

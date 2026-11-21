@@ -3,6 +3,8 @@
 // distance (data-parallax-speed), so distant layers move slower than near ones. Layers move with
 // transform only. Both the page scroll and the graveyard's sideways scroll count.
 
+/** One art pixel in CSS px. Layers move in whole steps of this size, so pixel art never shimmers. */
+export const PIXEL = 4;
 /** The most a layer moves up with the page scroll, in px. The layers reach this far below the screen. */
 export const MAX_SHIFT_Y = 120;
 /** The most a layer without a tile (the moon) moves sideways, in px. */
@@ -16,12 +18,13 @@ export const MAX_SHIFT_X = 80;
  * @param {number} scrollY Page scroll down, in px.
  * @param {number} speed Share of the scroll the layer follows. 0 keeps it still.
  * @param {number} [tile=0] Width of the repeating artwork in px. 0 means no wrapping.
- * @returns {{x: number, y: number}} Translation in px. Zero or negative.
+ * @returns {{x: number, y: number}} Translation in px, a whole number of art pixels. Zero or negative.
  */
 export function layerOffset(scrollX, scrollY, speed, tile = 0) {
   const safeSpeed = Number.isFinite(speed) && speed > 0 ? speed : 0;
-  const sideways = Math.max(0, Number(scrollX) || 0) * safeSpeed;
-  const down = Math.max(0, Number(scrollY) || 0) * safeSpeed;
+  const snap = (value) => Math.round(value / PIXEL) * PIXEL;
+  const sideways = snap(Math.max(0, Number(scrollX) || 0) * safeSpeed);
+  const down = snap(Math.max(0, Number(scrollY) || 0) * safeSpeed);
   const x = tile > 0 ? sideways % tile : Math.min(sideways, MAX_SHIFT_X);
   return { x: -x || 0, y: -Math.min(down, MAX_SHIFT_Y) || 0 };
 }

@@ -3,7 +3,8 @@
     "start": "node backend/server.js",
     "dev": "node backend/server.js",
     "test": "node --test \"tests/*.test.js\"",
-    "db:init": "node backend/db/init.js"
+    "db:init": "node backend/db/init.js",
+    "assets": "node scripts/make-pixel-assets.js"
   },
   "description": "A web application to help students organize college research with a spooky graveyard interface",
   "dependencies": {

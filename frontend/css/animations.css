@@ -1,16 +1,16 @@
 /* ==========================================================================
-   Spooky College Planner: CSS animations
-   Keyframes for the zombie walk, tombstone reveal, zombie defeat with a dirt
-   burst, dialog fade-in, stone rumble and ground fog. Only transform and opacity are animated, so the
-   browser can run them on the GPU. Every class here is disabled under
+   Spooky College Planner: pixel-art animations
+   Keyframes for the zombie walk, tombstone reveal, zombie defeat with a dirt burst, dialog
+   fade-in, stone rumble and ground mist. Motion is frame by frame: every animation uses steps()
+   timing and moves in whole 4 px grid steps, like frames of a sprite. Only transform and opacity
+   are animated, so the browser can run them on the GPU. Every class here is disabled under
    prefers-reduced-motion at the end of this file.
-   The classes are attached to elements by later tasks. Nothing is wired yet.
    The tombstone hover lift transition is defined in style.css, not here.
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
    1. Zombie walk
-   Looping bob and small sway. One cycle is 0.5s.
+   Looping bob. One cycle is 0.5s, in four frames.
    -------------------------------------------------------------------------- */
 @keyframes zombieWalk {
   0%,
@@ -18,24 +18,24 @@
     transform: translate(0, 0);
   }
   25% {
-    transform: translate(1px, -3px);
+    transform: translate(4px, -4px);
   }
   50% {
-    transform: translate(2px, 0);
+    transform: translate(4px, 0);
   }
   75% {
-    transform: translate(1px, -3px);
+    transform: translate(0, -4px);
   }
 }
 
 .zombie--walking {
-  animation: zombieWalk 0.5s linear infinite;
+  animation: zombieWalk 0.5s steps(1, end) infinite;
 }
 
 /* --------------------------------------------------------------------------
    2. Tombstone reveal
-   The stone rises from below the grass. "backwards" fill keeps the hover lift
-   working once the animation ends.
+   The stone rises from below the grass, five steps of 8 px. "backwards" fill keeps the hover
+   lift working once the animation ends.
    -------------------------------------------------------------------------- */
 @keyframes cardReveal {
   from {
@@ -49,13 +49,13 @@
 }
 
 .tombstone--reveal {
-  animation: cardReveal 0.3s ease-out backwards;
+  animation: cardReveal 0.3s steps(5, end) backwards;
 }
 
 /* --------------------------------------------------------------------------
    3. Zombie defeat and dirt burst
-   The zombie tips backward around its base and fades out. "forwards" fill
-   keeps it fallen and transparent at the end.
+   The zombie tips backward around its base and vanishes, in eight frames. "forwards" fill keeps
+   it fallen and transparent at the end.
    -------------------------------------------------------------------------- */
 @keyframes zombieDefeat {
   0% {
@@ -67,27 +67,27 @@
     opacity: 1;
   }
   80% {
-    transform: translate(-12px, 2px) rotate(-90deg);
+    transform: translate(-12px, 4px) rotate(-90deg);
     opacity: 1;
   }
   100% {
-    transform: translate(-12px, 2px) rotate(-90deg);
+    transform: translate(-12px, 4px) rotate(-90deg);
     opacity: 0;
   }
 }
 
 .zombie--defeated {
   transform-origin: 50% 100%;
-  animation: zombieDefeat 0.8s ease-in forwards;
+  animation: zombieDefeat 0.8s steps(8, end) forwards;
 }
 
-/* Dirt particles. Each cluster is a set of radial-gradient dots on a
-   pseudo-element. Both clusters move outward and fade. The --dirt-dx and
-   --dirt-dy custom properties set each cluster's direction. */
+/* Dirt particles. Each cluster is a few square pixels of a box-shadow. Both clusters move outward
+   and vanish, in steps. The --dirt-dx and --dirt-dy custom properties set each cluster's
+   direction. */
 @keyframes dirtBurst {
   0% {
     opacity: 0;
-    transform: translate(0, 0) scale(0.4);
+    transform: translate(0, 0) scale(0.5);
   }
   20% {
     opacity: 1;
@@ -112,32 +112,34 @@
   content: "";
   position: absolute;
   bottom: 0;
-  left: -14px;
-  width: 28px;
-  height: 20px;
+  left: -8px;
+  width: 4px;
+  height: 4px;
   opacity: 0;
-  background:
-    radial-gradient(circle at 25% 60%, #6b4a2a 2px, transparent 3px),
-    radial-gradient(circle at 70% 35%, #4a3219 2px, transparent 3px),
-    radial-gradient(circle at 50% 80%, #8a6038 1.5px, transparent 2.5px);
-  animation: dirtBurst 0.6s ease-out forwards;
+  background: #6b4a2a;
+  box-shadow:
+    8px 0 0 #4a3219,
+    4px -4px 0 #8a6038,
+    12px -4px 0 #6b4a2a,
+    0 -8px 0 #4a3219,
+    8px -8px 0 #8a6038;
+  animation: dirtBurst 0.6s steps(6, end) forwards;
 }
 
 .dirt-burst::before {
-  --dirt-dx: -26px;
-  --dirt-dy: -18px;
+  --dirt-dx: -28px;
+  --dirt-dy: -20px;
 }
 
 .dirt-burst::after {
-  --dirt-dx: 26px;
-  --dirt-dy: -22px;
+  --dirt-dx: 28px;
+  --dirt-dy: -24px;
   animation-delay: 0.05s;
 }
 
 /* --------------------------------------------------------------------------
    4. Dialog fade-in
-   Opacity with a small upward slide. Apply the class to a dialog when it
-   opens.
+   Opacity with a small upward slide, in four steps. Apply the class to a dialog when it opens.
    -------------------------------------------------------------------------- */
 @keyframes modalFadeIn {
   from {
@@ -151,10 +153,10 @@
 }
 
 .dialog--fade-in {
-  animation: modalFadeIn 0.25s ease-out backwards;
+  animation: modalFadeIn 0.25s steps(4, end) backwards;
 }
 
-/* Spinner shown while the college lookup is running. */
+/* Spinner shown while the college lookup is running: a square that turns in quarter steps. */
 @keyframes spinnerSpin {
   to {
     transform: rotate(360deg);
@@ -162,16 +164,16 @@
 }
 
 .search-spinner {
-  animation: spinnerSpin 0.8s linear infinite;
+  animation: spinnerSpin 0.8s steps(4, end) infinite;
 }
 
 /* --------------------------------------------------------------------------
    5. Wobbly stones
-   Hover or keyboard focus tilts a stone by at most 1.5 degrees, with small jolts, as if
-   something were knocking from underneath. The stone pivots on its base. --stone-lift is the
-   hover lift from style.css, so the rumble keeps the stone raised. A tap on a touch screen adds
-   .tombstone--wobble (wobble.js), which plays the same motion under a second name so it can
-   restart on every tap.
+   Hover or keyboard focus tilts a stone by at most 1.5 degrees, with small jolts, as if something
+   were knocking from underneath. Each pose is held until the next one, so it reads as frames. The
+   stone pivots on its base. --stone-lift is the hover lift from style.css, so the rumble keeps
+   the stone raised. A tap on a touch screen adds .tombstone--wobble (wobble.js), which plays the
+   same motion under a second name so it can restart on every tap.
    -------------------------------------------------------------------------- */
 @keyframes stoneRumble {
   0%,
@@ -179,19 +181,19 @@
     transform: translateY(var(--stone-lift, 0px)) rotate(0deg);
   }
   15% {
-    transform: translateY(calc(var(--stone-lift, 0px) - 3px)) rotate(-1.5deg);
+    transform: translateY(calc(var(--stone-lift, 0px) - 4px)) rotate(-1.5deg);
   }
   30% {
-    transform: translateY(calc(var(--stone-lift, 0px) + 1px)) rotate(1.2deg);
+    transform: translateY(calc(var(--stone-lift, 0px) + 4px)) rotate(1.2deg);
   }
   45% {
-    transform: translateY(calc(var(--stone-lift, 0px) - 2px)) rotate(-1deg);
+    transform: translateY(calc(var(--stone-lift, 0px) - 4px)) rotate(-1deg);
   }
   60% {
-    transform: translateY(calc(var(--stone-lift, 0px) + 1px)) rotate(1.5deg);
+    transform: translateY(calc(var(--stone-lift, 0px) + 4px)) rotate(1.5deg);
   }
   80% {
-    transform: translateY(calc(var(--stone-lift, 0px) - 1px)) rotate(-0.5deg);
+    transform: translateY(calc(var(--stone-lift, 0px) - 4px)) rotate(-0.5deg);
   }
 }
 
@@ -201,56 +203,64 @@
     transform: translateY(var(--stone-lift, 0px)) rotate(0deg);
   }
   15% {
-    transform: translateY(calc(var(--stone-lift, 0px) - 3px)) rotate(-1.5deg);
+    transform: translateY(calc(var(--stone-lift, 0px) - 4px)) rotate(-1.5deg);
   }
   30% {
-    transform: translateY(calc(var(--stone-lift, 0px) + 1px)) rotate(1.2deg);
+    transform: translateY(calc(var(--stone-lift, 0px) + 4px)) rotate(1.2deg);
   }
   45% {
-    transform: translateY(calc(var(--stone-lift, 0px) - 2px)) rotate(-1deg);
+    transform: translateY(calc(var(--stone-lift, 0px) - 4px)) rotate(-1deg);
   }
   60% {
-    transform: translateY(calc(var(--stone-lift, 0px) + 1px)) rotate(1.5deg);
+    transform: translateY(calc(var(--stone-lift, 0px) + 4px)) rotate(1.5deg);
   }
   80% {
-    transform: translateY(calc(var(--stone-lift, 0px) - 1px)) rotate(-0.5deg);
+    transform: translateY(calc(var(--stone-lift, 0px) - 4px)) rotate(-0.5deg);
   }
 }
 
 .tombstone:hover,
 .tombstone:focus-visible {
-  --stone-lift: -6px;
+  --stone-lift: -8px;
   transform-origin: 50% 100%;
-  animation: stoneRumble 0.45s ease-in-out;
+  animation: stoneRumble 0.45s steps(1, end);
 }
 
 .tombstone.tombstone--wobble {
   transform-origin: 50% 100%;
-  animation: stoneRumbleTap 0.45s ease-in-out;
+  animation: stoneRumbleTap 0.45s steps(1, end);
 }
 
 /* --------------------------------------------------------------------------
-   6. Drifting ground fog
-   One keyframe moves every mist layer sideways and back. The cards drift out of step with each
-   other, and the shared strip behind the graveyard drifts slowest.
+   6. Drifting ground mist
+   The mist is a tile of hard, dithered pixels. It slides sideways and back in 4 px steps, so the
+   pixels never blur. The cards drift out of step with each other, and the shared strip behind
+   the graveyard is wider and slower.
    -------------------------------------------------------------------------- */
 @keyframes fogDrift {
   from {
-    transform: translateX(-8%);
-    opacity: 0.75;
+    transform: translateX(-16px);
   }
   to {
-    transform: translateX(8%);
-    opacity: 1;
+    transform: translateX(16px);
+  }
+}
+
+@keyframes fogDriftWide {
+  from {
+    transform: translateX(-120px);
+  }
+  to {
+    transform: translateX(120px);
   }
 }
 
 .tombstone__fog {
-  animation: fogDrift 24s ease-in-out infinite alternate;
+  animation: fogDrift 24s steps(8, end) infinite alternate;
 }
 
 .scenery__fog {
-  animation: fogDrift 45s ease-in-out infinite alternate;
+  animation: fogDriftWide 45s steps(60, end) infinite alternate;
 }
 
 .college-tombstone:nth-child(2n) .tombstone__fog {

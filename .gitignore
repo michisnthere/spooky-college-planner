@@ -27,3 +27,6 @@ yarn-error.log*
 # Build
 dist/
 build/
+
+# Review screenshots (local only)
+screenshots/
